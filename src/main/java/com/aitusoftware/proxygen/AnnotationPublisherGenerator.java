@@ -32,7 +32,6 @@ public final class AnnotationPublisherGenerator extends AbstractProcessor
     @Override
     public boolean process(final Set<? extends TypeElement> annotations, final RoundEnvironment roundEnv)
     {
-        processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING, annotations.toString());
         final TypeElement typeElement = processingEnv.getElementUtils().getTypeElement(TOPIC_ANNOTATION_CLASS);
         final Set<? extends Element> topicElements = roundEnv.getElementsAnnotatedWith(typeElement);
         for (Element topicElement : topicElements)
@@ -59,7 +58,6 @@ public final class AnnotationPublisherGenerator extends AbstractProcessor
                             final TypeMirror parameterType = param.asType();
                             parameters.add(new ParameterDescriptor(parameterName.toString(),
                                     null, parameterType.toString()));
-                            processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING, parameterType.toString());
                         }
 
                         methods.add(new MethodDescriptor(i++, enclosedElement.getSimpleName().toString(),
@@ -69,7 +67,6 @@ public final class AnnotationPublisherGenerator extends AbstractProcessor
                     try {
                         final String generatedClassname = className.toString() + Constants.PROXYGEN_PUBLISHER_SUFFIX;
                         final JavaFileObject sourceFile = processingEnv.getFiler().createSourceFile(packageName + "." + generatedClassname, topicElement);
-                        processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING, sourceFile.toUri().toString());
                         final Writer writer = sourceFile.openWriter();
                         generator.generatePublisher(packageName.toString(), generatedClassname,
                                 className.toString(),
