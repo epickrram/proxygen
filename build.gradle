@@ -1,0 +1,40 @@
+apply plugin: 'java'
+sourceCompatibility = 1.9
+targetCompatibility = 1.9
+
+group = 'com.aitusoftware'
+version = '0.0.1'
+
+repositories {
+    jcenter()
+}
+
+ext.moduleName = 'com.aitusoftware.proxygen'
+
+compileJava {
+    inputs.property("moduleName", moduleName)
+    doFirst {
+        options.compilerArgs = [
+                '--module-path', classpath.asPath,
+        ]
+        classpath = files()
+    }
+}
+
+compileTestJava {
+    inputs.property("moduleName", moduleName)
+    doFirst {
+        options.compilerArgs = [
+                '--module-path', classpath.asPath,
+                '--add-modules', 'junit',
+                '--add-reads', "$moduleName=junit",
+                '--patch-module', "$moduleName=" + files(sourceSets.test.java.srcDirs).asPath,
+        ]
+        classpath = files()
+    }
+}
+
+dependencies {
+    testCompile 'junit:junit:4.12'
+}
+
