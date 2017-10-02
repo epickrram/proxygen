@@ -96,7 +96,7 @@ final class PublisherGenerator
             }
             else if (CharSequence.class == parameterType.getType())
             {
-                writer.append(parameterType.getName()).append(".length()");
+                writer.append("(").append(parameterType.getName()).append(".length() * 4) + 4 ");
                 appended++;
             }
             else
