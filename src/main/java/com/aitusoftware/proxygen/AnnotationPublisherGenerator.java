@@ -27,7 +27,8 @@ import java.util.Set;
 public final class AnnotationPublisherGenerator extends AbstractProcessor
 {
     private static final String TOPIC_ANNOTATION_CLASS = "com.aitusoftware.transport.messaging.Topic";
-    private final PublisherGenerator generator = new PublisherGenerator();
+    private final PublisherGenerator publisherGenerator = new PublisherGenerator();
+    private final SubscriberGenerator subscriberGenerator = new SubscriberGenerator();
 
     @Override
     public boolean process(final Set<? extends TypeElement> annotations, final RoundEnvironment roundEnv)
@@ -43,6 +44,7 @@ public final class AnnotationPublisherGenerator extends AbstractProcessor
                 final List<? extends Element> enclosedElements = topicElement.getEnclosedElements();
                 final List<MethodDescriptor> methods = new ArrayList<>();
                 int i = 0;
+
                 for (Element enclosedElement : enclosedElements)
                 {
                     if (enclosedElement.getKind() == ElementKind.METHOD)
@@ -65,14 +67,26 @@ public final class AnnotationPublisherGenerator extends AbstractProcessor
                     }
 
                     try {
-                        final String generatedClassname = className.toString() + Constants.PROXYGEN_PUBLISHER_SUFFIX;
-                        final JavaFileObject sourceFile = processingEnv.getFiler().createSourceFile(packageName + "." + generatedClassname, topicElement);
-                        final Writer writer = sourceFile.openWriter();
-                        generator.generatePublisher(packageName.toString(), generatedClassname,
+                        final String publisherClassname = className.toString() + Constants.PROXYGEN_PUBLISHER_SUFFIX;
+                        final String subscriberClassname = className.toString() + Constants.PROXYGEN_SUBSCRIBER_SUFFIX;
+
+                        final JavaFileObject publisherSourceFile = processingEnv.getFiler().createSourceFile(packageName + "." + publisherClassname, topicElement);
+                        final Writer publisherWriter = publisherSourceFile.openWriter();
+                        publisherGenerator.generatePublisher(packageName.toString(), publisherClassname,
                                 className.toString(),
                                 methods.toArray(new MethodDescriptor[methods.size()]),
-                                Collections.singletonList(packageName + "." + className), writer);
-                        writer.close();
+                                Collections.singletonList(packageName + "." + className), publisherWriter);
+                        publisherWriter.close();
+
+                        final JavaFileObject subscriberSourceFile = processingEnv.getFiler().createSourceFile(packageName + "." + subscriberClassname, topicElement);
+                        final Writer subscriberWriter = subscriberSourceFile.openWriter();
+                        subscriberGenerator.generateSubscriber(packageName.toString(), subscriberClassname,
+                                className.toString(),
+                                methods.toArray(new MethodDescriptor[methods.size()]),
+                                Collections.singletonList(packageName + "." + className), subscriberWriter);
+                        subscriberWriter.close();
+
+
                     } catch (IOException e) {
                         processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR,
                                 "Could not create source file: " + e.getMessage(), topicElement);
