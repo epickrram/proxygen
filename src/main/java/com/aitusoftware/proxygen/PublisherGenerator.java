@@ -82,13 +82,8 @@ final class PublisherGenerator
     {
         writer.append("\t\tfinal int recordLength = ");
         int staticLength = 0;
-        int appended = 0;
         for (int i = 0; i < parameterTypes.length; i++)
         {
-            if (appended != 0)
-            {
-                writer.append(" + ");
-            }
             final ParameterDescriptor parameterType = parameterTypes[i];
             if (parameterType.getType().isPrimitive())
             {
@@ -97,7 +92,7 @@ final class PublisherGenerator
             else if (CharSequence.class == parameterType.getType())
             {
                 writer.append("(").append(parameterType.getName()).append(".length() * 4) + 4 ");
-                appended++;
+                writer.append(" + ");
             }
             else
             {

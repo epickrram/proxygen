@@ -27,7 +27,7 @@ public class PublisherGeneratorTest {
                     "\tpublic void say(\n" +
                     "\t\tfinal java.lang.CharSequence word, final int count) {\n" +
                     "\t\t\n" +
-                    "\t\tfinal int recordLength = word.length() +  4;\n" +
+                    "\t\tfinal int recordLength = (word.length() * 4) + 4  +  4;\n" +
                     "\t\tfinal WritableRecord wr = acquireRecord(recordLength, (byte) 0);\n" +
                     "\t\tEncoder.encodeCharSequence(wr.buffer(), word);\n" +
                     "\t\tEncoder.encodeInt(wr.buffer(), count);\n" +
@@ -35,6 +35,7 @@ public class PublisherGeneratorTest {
                     "\t}\n" +
                     "\n" +
                     "}\n";
+
     private final PublisherGenerator generator = new PublisherGenerator();
 
     @Test

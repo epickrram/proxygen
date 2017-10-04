@@ -95,7 +95,6 @@ public final class AnnotationPublisherGenerator extends AbstractProcessor
 
                 }
 
-                return true;
             }
             else
             {
