@@ -29,7 +29,8 @@ public class SubscriberGeneratorTest
                     "\n" +
                     "\tprivate static final class Invoker_0_say implements MethodInvoker<TestSubscriber> {\n" +
                     "\t\tpublic void invoke(final TestSubscriber implementation, final ByteBuffer buffer) {\n" +
-                    "\t\t\tfinal java.lang.CharSequence word = Decoder.decodeCharSequence(buffer);\n" +
+                    "\t\t\tfinal StringBuilder csq_0 = CACHED_CSQ_0.get();\n" +
+                    "\t\t\tfinal java.lang.CharSequence word = Decoder.decodeCharSequence(buffer, csq_0);\n" +
                     "\t\t\tfinal int count = Decoder.decodeInt(buffer);\n" +
                     "\t\t\timplementation.say(word, count);\n" +
                     "\t\t}\n" +
@@ -43,6 +44,7 @@ public class SubscriberGeneratorTest
                     "\t\tinvokers[0] = new Invoker_0_say();\n" +
                     "\t\treturn invokers;\n" +
                     "\t}\n" +
+                    "\tprivate static final ThreadLocal<StringBuilder> CACHED_CSQ_0 = ThreadLocal.withInitial(StringBuilder::new);\n" +
                     "}\n";
 
     private final SubscriberGenerator generator = new SubscriberGenerator();

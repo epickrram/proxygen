@@ -17,11 +17,15 @@ final class SubscriberGenerator
             "java.nio.ByteBuffer"
     );
 
+    private int requiredNumberOfStringBuilders = 0;
+    private int maxRequiredStringBuilders = 0;
+
     void generateSubscriber(
             final String packageName, final String className, final String interfaceName,
             final MethodDescriptor[] methods, final List<String> imports,
             final Writer writer)
     {
+        maxRequiredStringBuilders = 0;
         try
         {
             writer.append("package ").append(packageName).append(";\n\n");
@@ -47,9 +51,15 @@ final class SubscriberGenerator
                     append("\t\tfinal MethodInvoker[] invokers = new MethodInvoker[").
                     append(methods.length).append("];\n");
 
+            final StringBuilder threadLocalStringBuilderSource = new StringBuilder();
+
             for (MethodDescriptor descriptor : methods)
             {
-                appendInvoker(descriptor, methodId, generateInvokersMethodSource, interfaceName, writer);
+                requiredNumberOfStringBuilders = 0;
+                appendInvoker(descriptor, methodId, generateInvokersMethodSource,
+                        threadLocalStringBuilderSource,
+                        interfaceName, writer);
+                maxRequiredStringBuilders = Math.max(maxRequiredStringBuilders, requiredNumberOfStringBuilders);
                 methodId++;
             }
 
@@ -57,6 +67,12 @@ final class SubscriberGenerator
                     append("\t}\n");
 
             writer.append("\n\n").append(generateInvokersMethodSource);
+
+            for (int i = 0; i < maxRequiredStringBuilders; i++)
+            {
+                writer.append("\tprivate static final ThreadLocal<StringBuilder> CACHED_CSQ_").
+                        append(Integer.toString(i)).append(" = ThreadLocal.withInitial(StringBuilder::new);\n");
+            }
 
             writer.append("}\n");
         }
@@ -76,7 +92,9 @@ final class SubscriberGenerator
 
     private void appendInvoker(
             final MethodDescriptor descriptor, final byte methodId,
-            final StringBuilder generateInvokersMethodSource, final String interfaceName, final Writer writer) throws IOException
+            final StringBuilder generateInvokersMethodSource,
+            final StringBuilder threadLocalStringBuilderSource,
+            final String interfaceName, final Writer writer) throws IOException
     {
         final String invokerClassname = "Invoker_" + Byte.toString(methodId) + "_" + descriptor.getName();
         writer.append("\tprivate static final class ").
@@ -118,10 +136,29 @@ final class SubscriberGenerator
     {
         for (final ParameterDescriptor parameterType : parameterTypes)
         {
-            writer.append("\t\t\tfinal ").append(parameterType.getTypeName()).
-                    append(" ").append(parameterType.getName()).
-                    append(" = Decoder.decode").append(toMethodSuffix(parameterType.getType().getSimpleName())).
-                    append("(buffer);\n");
+
+            final String methodSuffix = toMethodSuffix(parameterType.getType().getSimpleName());
+            if (methodSuffix.equals("CharSequence"))
+            {
+                requiredNumberOfStringBuilders++;
+
+                final String variableSuffix = Integer.toString(requiredNumberOfStringBuilders - 1);
+                writer.append("\t\t\t").append("final StringBuilder csq_").
+                        append(variableSuffix).
+                        append(" = CACHED_CSQ_").append(variableSuffix).
+                        append(".get();\n");
+                writer.append("\t\t\tfinal ").append(parameterType.getTypeName()).
+                        append(" ").append(parameterType.getName()).
+                        append(" = Decoder.decode").append(methodSuffix).
+                        append("(buffer, csq_").append(variableSuffix).append(");\n");
+            }
+            else
+            {
+                writer.append("\t\t\tfinal ").append(parameterType.getTypeName()).
+                        append(" ").append(parameterType.getName()).
+                        append(" = Decoder.decode").append(methodSuffix).
+                        append("(buffer);\n");
+            }
         }
     }
 
