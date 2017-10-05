@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -29,6 +30,7 @@ public final class AnnotationPublisherGenerator extends AbstractProcessor
     private static final String TOPIC_ANNOTATION_CLASS = "com.aitusoftware.transport.messaging.Topic";
     private final PublisherGenerator publisherGenerator = new PublisherGenerator();
     private final SubscriberGenerator subscriberGenerator = new SubscriberGenerator();
+    private final Set<String> generated = new HashSet<>();
 
     @Override
     public boolean process(final Set<? extends TypeElement> annotations, final RoundEnvironment roundEnv)
@@ -41,6 +43,12 @@ public final class AnnotationPublisherGenerator extends AbstractProcessor
             {
                 final Name className = topicElement.getSimpleName();
                 final Name packageName = processingEnv.getElementUtils().getPackageOf(topicElement).getQualifiedName();
+                final String identifier = packageName.toString() + "." + className.toString();
+                if (generated.contains(identifier))
+                {
+                    continue;
+                }
+                generated.add(identifier);
                 final List<? extends Element> enclosedElements = topicElement.getEnclosedElements();
                 final List<MethodDescriptor> methods = new ArrayList<>();
                 int i = 0;
@@ -88,13 +96,12 @@ public final class AnnotationPublisherGenerator extends AbstractProcessor
 
 
                     } catch (IOException e) {
-                        processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR,
+                        processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING,
                                 "Could not create source file: " + e.getMessage(), topicElement);
                     }
 
 
                 }
-
             }
             else
             {
