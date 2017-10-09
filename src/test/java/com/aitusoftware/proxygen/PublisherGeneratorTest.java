@@ -18,9 +18,9 @@ public class PublisherGeneratorTest {
                     "import com.aitusoftware.transport.messaging.proxy.Encoder;\n" +
                     "\n" +
                     "\n" +
-                    "public class TestPublisher extends AbstractPublisher implements TestPublisherImpl {\n" +
+                    "public class TestPublisherImpl extends AbstractPublisher implements TestPublisher {\n" +
                     "\n" +
-                    "\tpublic TestPublisher(final PageCache pageCache) {\n" +
+                    "\tpublic TestPublisherImpl(final PageCache pageCache) {\n" +
                     "\t\tsuper(pageCache);\n" +
                     "\t}\n" +
                     "\n" +
@@ -29,6 +29,16 @@ public class PublisherGeneratorTest {
                     "\t\t\n" +
                     "\t\tfinal int recordLength = (word.length() * 4) + 4  +  4;\n" +
                     "\t\tfinal WritableRecord wr = acquireRecord(recordLength, (byte) 0);\n" +
+                    "\t\tEncoder.encodeCharSequence(wr.buffer(), word);\n" +
+                    "\t\tEncoder.encodeInt(wr.buffer(), count);\n" +
+                    "\t\twr.commit();\n" +
+                    "\t}\n" +
+                    "\n" +
+                    "\tpublic void shout(\n" +
+                    "\t\tfinal java.lang.CharSequence word, final int count) {\n" +
+                    "\t\t\n" +
+                    "\t\tfinal int recordLength = (word.length() * 4) + 4  +  4;\n" +
+                    "\t\tfinal WritableRecord wr = acquireRecord(recordLength, (byte) 1);\n" +
                     "\t\tEncoder.encodeCharSequence(wr.buffer(), word);\n" +
                     "\t\tEncoder.encodeInt(wr.buffer(), count);\n" +
                     "\t\twr.commit();\n" +
@@ -43,14 +53,20 @@ public class PublisherGeneratorTest {
     {
         final StringWriter writer = new StringWriter();
         generator.generatePublisher(
-                "com.package", "TestPublisher",
-                "TestPublisherImpl",
+                "com.package", "TestPublisherImpl",
+                "TestPublisher",
                 new MethodDescriptor[]{
                         new MethodDescriptor(0, "say",
                                 new ParameterDescriptor[]{
                                         new ParameterDescriptor("word", CharSequence.class, "java.lang.CharSequence"),
                                         new ParameterDescriptor("count", int.class, "int")
-                                })},
+                                }),
+                        new MethodDescriptor(0, "shout",
+                                new ParameterDescriptor[]{
+                                        new ParameterDescriptor("word", CharSequence.class, "java.lang.CharSequence"),
+                                        new ParameterDescriptor("count", int.class, "int")
+                                })
+                },
                 Collections.emptyList(),
                 writer);
 
