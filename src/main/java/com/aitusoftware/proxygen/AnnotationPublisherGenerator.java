@@ -6,6 +6,8 @@ import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -19,8 +21,10 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @SupportedAnnotationTypes("com.aitusoftware.transport.messaging.Topic")
@@ -31,6 +35,8 @@ public final class AnnotationPublisherGenerator extends AbstractProcessor
     private final PublisherGenerator publisherGenerator = new PublisherGenerator();
     private final SubscriberGenerator subscriberGenerator = new SubscriberGenerator();
     private final Set<String> generated = new HashSet<>();
+    private final Map<String, NetAddress> addressSpace = new HashMap<>();
+    private boolean generatedAddressSpace = false;
 
     @Override
     public boolean process(final Set<? extends TypeElement> annotations, final RoundEnvironment roundEnv)
@@ -41,6 +47,28 @@ public final class AnnotationPublisherGenerator extends AbstractProcessor
         {
             if (topicElement.getKind() == ElementKind.INTERFACE)
             {
+                final List<? extends AnnotationMirror> annotationMirrors = topicElement.getAnnotationMirrors();
+                for (AnnotationMirror annotationMirror : annotationMirrors)
+                {
+                    final Map<? extends ExecutableElement, ? extends AnnotationValue> elementValues = annotationMirror.getElementValues();
+                    String listenAddr = "0.0.0.0";
+                    int port = -1;
+                    for (Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry : elementValues.entrySet())
+                    {
+                        if (entry.getKey().getSimpleName().contentEquals("listenAddress"))
+                        {
+                            listenAddr = entry.getValue().getValue().toString();
+                        }
+                        if (entry.getKey().getSimpleName().contentEquals("port"))
+                        {
+                            port = Integer.parseInt(entry.getValue().getValue().toString());
+                        }
+                    }
+
+                    addressSpace.put(topicElement.asType().toString(),
+                            new NetAddress(listenAddr, port));
+                }
+
                 final Name className = topicElement.getSimpleName();
                 final Name packageName = processingEnv.getElementUtils().getPackageOf(topicElement).getQualifiedName();
                 final String identifier = packageName.toString() + "." + className.toString();
@@ -75,7 +103,8 @@ public final class AnnotationPublisherGenerator extends AbstractProcessor
                     }
                 }
 
-                try {
+                try
+                {
                     final String publisherClassname = className.toString() + Constants.PROXYGEN_PUBLISHER_SUFFIX;
                     final String subscriberClassname = className.toString() + Constants.PROXYGEN_SUBSCRIBER_SUFFIX;
 
@@ -96,7 +125,9 @@ public final class AnnotationPublisherGenerator extends AbstractProcessor
                     subscriberWriter.close();
 
 
-                } catch (IOException e) {
+                }
+                catch (IOException e)
+                {
                     processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING,
                             "Could not create source file: " + e.getMessage(), topicElement);
                 }
@@ -107,6 +138,54 @@ public final class AnnotationPublisherGenerator extends AbstractProcessor
                         "@Topic should only be used on interfaces");
             }
         }
+
+        if (!addressSpace.isEmpty() && !generatedAddressSpace)
+        {
+            generatedAddressSpace = true;
+            try
+            {
+                final String packageName = getTopLevelPackage(addressSpace.keySet());
+                final JavaFileObject addressSpaceSourceFile = processingEnv.getFiler().
+                        createSourceFile(packageName + "." + AddressSpaceGenerator.GENERATED_CLASS_NAME);
+                try(final Writer addressSpaceWriter = addressSpaceSourceFile.openWriter())
+                {
+                    new AddressSpaceGenerator().generateAddressSpace(packageName, addressSpace, addressSpaceWriter);
+                }
+            }
+            catch (IOException e)
+            {
+                processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING,
+                        "Could not create source file: " + e.getMessage(), null);
+            }
+        }
+
         return false;
+    }
+
+    private String getTopLevelPackage(final Set<String> classNames)
+    {
+        String classNameWithMostPackages = null;
+        int maxPackageCount = 0;
+        for (String className : classNames)
+        {
+            final int packages = className.split("\\.").length - 1;
+            if (packages > maxPackageCount || classNameWithMostPackages == null)
+            {
+                maxPackageCount = packages;
+                classNameWithMostPackages = className;
+            }
+        }
+
+        final String[] packages = classNameWithMostPackages.split("\\.");
+        final StringBuilder topLevelPackage = new StringBuilder(packages[0]);
+        int ptr = 1;
+        while (classNames.stream().
+                filter(cn -> cn.startsWith(topLevelPackage.toString())).
+                count() == classNames.size())
+        {
+            topLevelPackage.append(".").append(packages[ptr++]);
+        }
+
+        return topLevelPackage.toString();
     }
 }

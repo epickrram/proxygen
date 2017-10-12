@@ -10,7 +10,7 @@ sourceCompatibility = 1.9
 targetCompatibility = 1.9
 
 group = 'com.aitusoftware'
-version = '0.0.1'
+version = '0.1.0'
 
 repositories {
     jcenter()
