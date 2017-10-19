@@ -1,5 +1,6 @@
 package com.aitusoftware.proxygen.message;
 
+import com.aitusoftware.proxygen.common.Constants;
 import com.aitusoftware.proxygen.common.MethodDescriptor;
 import com.aitusoftware.proxygen.common.ParameterDescriptor;
 import com.aitusoftware.proxygen.common.Types;
@@ -71,8 +72,17 @@ public final class MessageFlyweightGenerator
             }
             lengthBuilder.append("0;\n").append("\t}\n\n");
 
+            writer.append("\tpublic ").append(interfaceName).append(" heapCopy() {\n");
+            writer.append("\t\tfinal ").append(interfaceName).append(Constants.MESSAGE_BUILDER_SUFFIX);
+            writer.append(" builder = new ").append(interfaceName).append(Constants.MESSAGE_BUILDER_SUFFIX).append("();\n");
+            for (MethodDescriptor method : methods)
+            {
+                writer.append("\t\tbuilder.").append(method.getName()).append("(").
+                        append(method.getName()).append("());\n");
+            }
+            writer.append("\t\treturn builder;\n");
 
-            // TODO add heapCopy method
+            writer.append("\t}\n\n");
 
             writer.append(resetBuilder);
             writer.append(lengthBuilder);

@@ -49,9 +49,6 @@ public final class MessageSerialiserGenerator
 
             writer.append("\t}\n");
 
-            // TODO add heapCopy method
-
-
             writer.append("}");
         }
         catch (IOException e)
