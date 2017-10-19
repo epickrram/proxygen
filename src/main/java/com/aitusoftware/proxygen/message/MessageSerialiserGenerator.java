@@ -43,8 +43,17 @@ public final class MessageSerialiserGenerator
 
             for (MethodDescriptor method : methods)
             {
-                writer.append("\t\t").append(bufferAccessFor(method.getReturnType())).
-                        append("_instance.").append(method.getName()).append("());\n");
+                final Class<?> returnType = Types.typeNameToType(method.getReturnType().getTypeName());
+                if (Types.isPrimitive(returnType))
+                {
+                    writer.append("\t\t").append(bufferAccessFor(method.getReturnType())).
+                            append("_instance.").append(method.getName()).append("());\n");
+                }
+                else if (Types.isCharSequence(returnType))
+                {
+                    writer.append("\t\t").append(bufferAccessFor(method.getReturnType())).
+                            append("_instance.").append(method.getName()).append("());\n");
+                }
             }
 
             writer.append("\t}\n");

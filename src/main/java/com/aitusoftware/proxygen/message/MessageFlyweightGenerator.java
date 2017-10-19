@@ -55,20 +55,41 @@ public final class MessageFlyweightGenerator
             lengthBuilder.append("\tpublic int length() {\n").
                     append("\t\t return ");
 
+            final StringBuilder fieldBuilder = new StringBuilder();
 
             int paramOffset = 0;
 
             for (MethodDescriptor method : methods)
             {
-                lengthBuilder.append(getPrimitiveTypeSize(typeNameToType(method.getReturnType().getTypeName()))).
-                        append(" + ");
-                final Class<?> returnType = Types.typeNameToType(method.getReturnType().getTypeName());
-                writer.append("\tpublic ").append(method.getReturnType().getTypeName()).append(" ").
-                        append(method.getName()).append("() {\n");
+                final MethodTranslator translator = new MethodTranslator(method.getName());
+                final Class<?> returnType = typeNameToType(method.getReturnType().getTypeName());
+                if (Types.isPrimitive(returnType))
+                {
+                    lengthBuilder.append(getPrimitiveTypeSize(returnType)).
+                            append(" + ");
+                    writer.append("\tpublic ").append(method.getReturnType().getTypeName()).append(" ").
+                            append(method.getName()).append("() {\n");
 
-                writer.append("\t\treturn ").append(bufferAccessFor(method.getReturnType(), paramOffset)).append("\n");
-                writer.append("\t}\n\n");
-                paramOffset += Types.getPrimitiveTypeSize(returnType);
+                    writer.append("\t\treturn ").append(bufferAccessFor(method.getReturnType(), paramOffset)).append("\n");
+                    writer.append("\t}\n\n");
+                    paramOffset += Types.getPrimitiveTypeSize(returnType);
+                }
+                else if (Types.isCharSequence(returnType))
+                {
+                    writer.append("\tpublic ").append(method.getReturnType().getTypeName()).append(" ").
+                            append(method.getName()).append("() {\n");
+
+                    writer.append("\t\treturn ").append("Decoder.decode").
+                            append(Types.toMethodSuffix(method.getReturnType().getTypeName())).
+                            append("At(buffer, offset + ").append(String.valueOf(paramOffset)).
+                            append(", ").append(translator.fieldName).append(");").append("\n");
+                    writer.append("\t}\n\n");
+
+                    fieldBuilder.append("\tprivate final StringBuilder ").append(translator.fieldName).
+                            append(" = new StringBuilder();\n");
+                    lengthBuilder.append("(").append(method.getName()).append("().length() * 4) + 4").
+                            append(" + ");
+                }
             }
             lengthBuilder.append("0;\n").append("\t}\n\n");
 
@@ -77,7 +98,8 @@ public final class MessageFlyweightGenerator
             writer.append(" builder = new ").append(interfaceName).append(Constants.MESSAGE_BUILDER_SUFFIX).append("();\n");
             for (MethodDescriptor method : methods)
             {
-                writer.append("\t\tbuilder.").append(method.getName()).append("(").
+                final MethodTranslator translator = new MethodTranslator(method.getName());
+                writer.append("\t\tbuilder.").append(translator.setterName).append("(").
                         append(method.getName()).append("());\n");
             }
             writer.append("\t\treturn builder;\n");
@@ -86,6 +108,7 @@ public final class MessageFlyweightGenerator
 
             writer.append(resetBuilder);
             writer.append(lengthBuilder);
+            writer.append(fieldBuilder);
 
             writer.append("}");
         }

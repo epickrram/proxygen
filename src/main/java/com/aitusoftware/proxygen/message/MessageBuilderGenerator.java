@@ -1,9 +1,8 @@
 package com.aitusoftware.proxygen.message;
 
 import com.aitusoftware.proxygen.common.MethodDescriptor;
+import com.aitusoftware.proxygen.common.Types;
 
-import javax.annotation.processing.Messager;
-import javax.tools.Diagnostic;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.io.Writer;
@@ -18,7 +17,7 @@ public final class MessageBuilderGenerator
             final String packageName, final String className,
             final String interfaceName,
             final MethodDescriptor[] methods, final List<String> imports,
-            final Writer writer, final Messager messager)
+            final Writer writer)
     {
 
         try
@@ -41,47 +40,44 @@ public final class MessageBuilderGenerator
                     append("\t\t return ");
             for (MethodDescriptor method : methods)
             {
-                final String setterName;
-                final String fieldName;
-                if (method.getName().startsWith("get"))
-                {
-                    setterName = "set" + method.getName().substring(3);
-                    final String suffix = method.getName().substring(3);
-                    fieldName = Character.toLowerCase(suffix.charAt(0)) + suffix.substring(1);
-                }
-                else
-                {
-                    setterName = method.getName();
-                    fieldName = method.getName();
-                }
+                final MethodTranslator translator = new MethodTranslator(method.getName());
 
-                if (messager != null)
-                {
-                    messager.printMessage(Diagnostic.Kind.WARNING, method.toString());
-                }
-                lengthBuilder.append(getPrimitiveTypeSize(typeNameToType(method.getReturnType().getTypeName()))).
-                        append(" + ");
-
-                resetBuilder.append("\t\tthis.").append(fieldName).append(" = ").
-                        append(getResetValueForType(method.getReturnType().getTypeName())).
-                        append(";\n");
-
-                fieldBuilder.append("\tprivate ").append(method.getReturnType().getTypeName()).
-                        append(" ").append(fieldName).append(";\n");
+                final Class<?> returnType = typeNameToType(method.getReturnType().getTypeName());
 
                 writer.append("\tpublic ").append(className).append(" ").
-                        append(setterName).append("(").append(method.getReturnType().getTypeName()).
-                        append(" ").append(fieldName).append(") {\n");
+                        append(translator.setterName).append("(").append(method.getReturnType().getTypeName()).
+                        append(" ").append(translator.fieldName).append(") {\n");
 
-                writer.append("\t\tthis.").append(fieldName).append(" = ").
-                        append(fieldName).append(";\n");
-                writer.append("\t\treturn this;\n");
-                writer.append("\t}\n\n");
+                if (Types.isPrimitive(returnType))
+                {
+                    lengthBuilder.append(getPrimitiveTypeSize(returnType)).
+                            append(" + ");
+                    fieldBuilder.append("\tprivate ").append(method.getReturnType().getTypeName()).
+                            append(" ").append(translator.fieldName).append(";\n");
+                    resetBuilder.append("\t\tthis.").append(translator.fieldName).append(" = ").
+                            append(getResetValueForType(method.getReturnType().getTypeName())).
+                            append(";\n");
+                    writer.append("\t\tthis.").append(translator.fieldName).append(" = ").
+                            append(translator.fieldName).append(";\n");
+                    writer.append("\t\treturn this;\n");
+                    writer.append("\t}\n\n");
+                }
+                else if(Types.isCharSequence(returnType))
+                {
+                    lengthBuilder.append("(").append(translator.fieldName).append(".length() * 4) + 4 + ");
+                    fieldBuilder.append("\tprivate StringBuilder ").append(translator.fieldName).append(" = new StringBuilder();\n");
+                    resetBuilder.append("\t\tthis.").append(translator.fieldName).append(".setLength(0);\n");
+                    writer.append("\t\tthis.").append(translator.fieldName).append(".setLength(0);\n");
+                    writer.append("\t\tthis.").append(translator.fieldName).append(".append(").
+                            append(translator.fieldName).append(");\n");
+                    writer.append("\t\treturn this;\n");
+                    writer.append("\t}\n\n");
+                }
 
                 writer.append("\tpublic ").append(method.getReturnType().getTypeName()).append(" ").
                         append(method.getName()).append("() {\n");
 
-                writer.append("\t\treturn this.").append(fieldName).append(";\n");
+                writer.append("\t\treturn this.").append(translator.fieldName).append(";\n");
                 writer.append("\t}\n\n");
             }
 

@@ -67,11 +67,6 @@ public enum Types
                 "Unsupported primitive type: %s", type.getName()));
     }
 
-    private static boolean is(final Class<?> cls, final Class<?> refClass)
-    {
-        return cls == refClass;
-    }
-
     public static Class<?> typeNameToType(final String typeName)
     {
         Class<?> tmp = null;
@@ -113,11 +108,30 @@ public enum Types
 
     public static String toMethodSuffix(final String name)
     {
+        if (name.indexOf('.') > -1)
+        {
+            return name.substring(name.lastIndexOf('.') + 1);
+        }
         final char first = name.charAt(0);
         if (Character.isLowerCase(first))
         {
             return Character.toUpperCase(first) + name.substring(1);
         }
         return name;
+    }
+
+    public static boolean isPrimitive(final Class<?> cls)
+    {
+        return cls.isPrimitive();
+    }
+
+    public static boolean isCharSequence(final Class<?> cls)
+    {
+        return cls == CharSequence.class;
+    }
+
+    private static boolean is(final Class<?> cls, final Class<?> refClass)
+    {
+        return cls == refClass;
     }
 }

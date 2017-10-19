@@ -1,7 +1,5 @@
 package com.aitusoftware.proxygen.message;
 
-import com.aitusoftware.proxygen.common.MethodDescriptor;
-import com.aitusoftware.proxygen.common.ParameterDescriptor;
 import org.junit.Test;
 
 import java.io.StringWriter;
@@ -26,7 +24,7 @@ public class MessageBuilderGeneratorTest
                     "\t}\n" +
                     "\n" +
                     "\tpublic long orderId() {\n" +
-                    "\t\treturn this.orderId\n" +
+                    "\t\treturn this.orderId;\n" +
                     "\t}\n" +
                     "\n" +
                     "\tpublic OrderDetailsBuilder setQuantity(double quantity) {\n" +
@@ -35,7 +33,7 @@ public class MessageBuilderGeneratorTest
                     "\t}\n" +
                     "\n" +
                     "\tpublic double getQuantity() {\n" +
-                    "\t\treturn this.quantity\n" +
+                    "\t\treturn this.quantity;\n" +
                     "\t}\n" +
                     "\n" +
                     "\tpublic OrderDetailsBuilder price(double price) {\n" +
@@ -44,22 +42,34 @@ public class MessageBuilderGeneratorTest
                     "\t}\n" +
                     "\n" +
                     "\tpublic double price() {\n" +
-                    "\t\treturn this.price\n" +
+                    "\t\treturn this.price;\n" +
+                    "\t}\n" +
+                    "\n" +
+                    "\tpublic OrderDetailsBuilder setDescriptor(java.lang.CharSequence descriptor) {\n" +
+                    "\t\tthis.descriptor.setLength(0);\n" +
+                    "\t\tthis.descriptor.append(descriptor);\n" +
+                    "\t\treturn this;\n" +
+                    "\t}\n" +
+                    "\n" +
+                    "\tpublic java.lang.CharSequence getDescriptor() {\n" +
+                    "\t\treturn this.descriptor;\n" +
                     "\t}\n" +
                     "\n" +
                     "\tprivate long orderId;\n" +
                     "\tprivate double quantity;\n" +
                     "\tprivate double price;\n" +
+                    "\tprivate StringBuilder descriptor = new StringBuilder();\n" +
                     "\n" +
                     "\n" +
                     "\tpublic void reset() {\n" +
                     "\t\tthis.orderId = 0;\n" +
                     "\t\tthis.quantity = 0;\n" +
                     "\t\tthis.price = 0;\n" +
+                    "\t\tthis.descriptor.setLength(0);\n" +
                     "\t}\n" +
                     "\n" +
                     "\tpublic int length() {\n" +
-                    "\t\t return 8 + 8 + 8 + 0;\n" +
+                    "\t\t return 8 + 8 + 8 + (descriptor.length() * 4) + 4 + 0;\n" +
                     "\t}\n" +
                     "\n" +
                     "}";
@@ -76,23 +86,14 @@ public class MessageBuilderGeneratorTest
     @Test
     public void shouldGenerateBuilderClass() throws Exception
     {
-        final MethodDescriptor[] methods = new MethodDescriptor[]
-                {
-                        new MethodDescriptor(0, "orderId", new ParameterDescriptor[0],
-                                new ParameterDescriptor(null, long.class, "long")),
-                        new MethodDescriptor(0, "getQuantity", new ParameterDescriptor[0],
-                                new ParameterDescriptor(null, double.class, "double")),
-                        new MethodDescriptor(0, "price", new ParameterDescriptor[0],
-                                new ParameterDescriptor(null, double.class, "double")),
-                };
         final StringWriter writer = new StringWriter();
         new MessageBuilderGenerator().
                 generateMessageBuilder("com.aitusoftware.example",
                         "OrderDetailsBuilder",
                         "OrderDetails",
-                        methods,
+                        Fixtures.METHODS,
                         Collections.singletonList("foo.example.Requirement"),
-                        writer, null);
+                        writer);
 
         assertThat(writer.toString(), is(GENERATED_SOURCE));
     }

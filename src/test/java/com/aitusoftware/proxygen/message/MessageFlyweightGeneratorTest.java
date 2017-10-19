@@ -1,7 +1,5 @@
 package com.aitusoftware.proxygen.message;
 
-import com.aitusoftware.proxygen.common.MethodDescriptor;
-import com.aitusoftware.proxygen.common.ParameterDescriptor;
 import org.junit.Test;
 
 import java.io.StringWriter;
@@ -13,10 +11,11 @@ import static org.junit.Assert.assertThat;
 public class MessageFlyweightGeneratorTest
 {
     private static final String GENERATED_SOURCE =
-                    "package com.aitusoftware.example;\n" +
+            "package com.aitusoftware.example;\n" +
                     "\n" +
                     "import foo.example.Requirement;\n" +
-                    "import com.aitusoftware.transport.messaging.proxy.Encoder;\n" +
+                    "import com.aitusoftware.transport.messaging.proxy.Decoder;\n" +
+                    "import java.nio.ByteBuffer;\n" +
                     "\n" +
                     "\n" +
                     "public class OrderDetailsFlyweight implements OrderDetails {\n" +
@@ -36,14 +35,28 @@ public class MessageFlyweightGeneratorTest
                     "\t\treturn Decoder.decodeDoubleAt(buffer, offset + 16);\n" +
                     "\t}\n" +
                     "\n" +
+                    "\tpublic java.lang.CharSequence getDescriptor() {\n" +
+                    "\t\treturn Decoder.decodeCharSequenceAt(buffer, offset + 24, descriptor);\n" +
+                    "\t}\n" +
+                    "\n" +
+                    "\tpublic OrderDetails heapCopy() {\n" +
+                    "\t\tfinal OrderDetailsBuilder builder = new OrderDetailsBuilder();\n" +
+                    "\t\tbuilder.orderId(orderId());\n" +
+                    "\t\tbuilder.setQuantity(getQuantity());\n" +
+                    "\t\tbuilder.price(price());\n" +
+                    "\t\tbuilder.setDescriptor(getDescriptor());\n" +
+                    "\t\treturn builder;\n" +
+                    "\t}\n" +
+                    "\n" +
                     "\tpublic void reset(final ByteBuffer buffer) {\n" +
                     "\t\tthis.buffer = buffer;\n" +
                     "\t\tthis.offset = buffer.position();\n" +
                     "\t}\n" +
                     "\n" +
                     "\tpublic int length() {\n" +
-                    "\t\t return 8 + 8 + 8 + 0;\n" +
+                    "\t\t return 8 + 8 + 8 + (getDescriptor().length() * 4) + 4 + 0;\n" +
                     "\t}\n" +
+                    "\n\tprivate final StringBuilder descriptor = new StringBuilder();" +
                     "\n" +
                     "}";
         /*
@@ -58,21 +71,12 @@ public class MessageFlyweightGeneratorTest
     @Test
     public void shouldGenerateFlyweight() throws Exception
     {
-        final MethodDescriptor[] methods = new MethodDescriptor[]
-                {
-                        new MethodDescriptor(0, "orderId", new ParameterDescriptor[0],
-                                new ParameterDescriptor(null, long.class, "long")),
-                        new MethodDescriptor(0, "getQuantity", new ParameterDescriptor[0],
-                                new ParameterDescriptor(null, double.class, "double")),
-                        new MethodDescriptor(0, "price", new ParameterDescriptor[0],
-                                new ParameterDescriptor(null, double.class, "double")),
-                };
         final StringWriter writer = new StringWriter();
         new MessageFlyweightGenerator().
                 generateFlyweight("com.aitusoftware.example",
                         "OrderDetailsFlyweight",
                         "OrderDetails",
-                        methods,
+                        Fixtures.METHODS,
                         Collections.singletonList("foo.example.Requirement"),
                         writer);
 

@@ -95,7 +95,7 @@ public final class MessageGenerator extends AbstractProcessor
                     new MessageBuilderGenerator().generateMessageBuilder(packageName.toString(), builderClassname,
                             className.toString(),
                             methods.toArray(new MethodDescriptor[methods.size()]),
-                            Collections.singletonList(packageName + "." + className), builderWriter, null);
+                            Collections.singletonList(packageName + "." + className), builderWriter);
                     builderWriter.close();
 
                     final JavaFileObject flyweightSourceFile = processingEnv.getFiler().createSourceFile(packageName + "." + flyweightClassname, topicElement);
