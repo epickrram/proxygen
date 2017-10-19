@@ -1,5 +1,8 @@
 package com.aitusoftware.proxygen;
 
+import com.aitusoftware.proxygen.common.MethodDescriptor;
+import com.aitusoftware.proxygen.common.ParameterDescriptor;
+import com.aitusoftware.proxygen.publisher.SubscriberGenerator;
 import org.junit.Test;
 
 import java.io.StringWriter;

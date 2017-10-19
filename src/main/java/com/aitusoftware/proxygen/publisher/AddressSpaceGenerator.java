@@ -1,4 +1,4 @@
-package com.aitusoftware.proxygen;
+package com.aitusoftware.proxygen.publisher;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -15,9 +15,9 @@ public final class AddressSpaceGenerator
             "com.aitusoftware.transport.net.AddressSpace"
     );
 
-    static final String GENERATED_CLASS_NAME = "StaticAddressSpace";
+    public static final String GENERATED_CLASS_NAME = "StaticAddressSpace";
 
-    void generateAddressSpace(
+    public void generateAddressSpace(
             final String packageName,
             final Map<String, NetAddress> addressSpace,
             final Writer writer) throws IOException

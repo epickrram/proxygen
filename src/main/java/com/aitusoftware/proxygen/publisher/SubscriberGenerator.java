@@ -1,4 +1,7 @@
-package com.aitusoftware.proxygen;
+package com.aitusoftware.proxygen.publisher;
+
+import com.aitusoftware.proxygen.common.MethodDescriptor;
+import com.aitusoftware.proxygen.common.ParameterDescriptor;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -6,7 +9,7 @@ import java.io.Writer;
 import java.util.Arrays;
 import java.util.List;
 
-final class SubscriberGenerator
+public final class SubscriberGenerator
 {
     private static final List<String> REQUIRED_IMPORTS = Arrays.asList(
             "com.aitusoftware.transport.messaging.proxy.AbstractSubscriber",
@@ -20,7 +23,7 @@ final class SubscriberGenerator
     private int requiredNumberOfStringBuilders = 0;
     private int maxRequiredStringBuilders = 0;
 
-    void generateSubscriber(
+    public void generateSubscriber(
             final String packageName, final String className, final String interfaceName,
             final MethodDescriptor[] methods, final List<String> imports,
             final Writer writer)

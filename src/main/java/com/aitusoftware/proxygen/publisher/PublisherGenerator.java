@@ -1,4 +1,8 @@
-package com.aitusoftware.proxygen;
+package com.aitusoftware.proxygen.publisher;
+
+import com.aitusoftware.proxygen.common.MethodDescriptor;
+import com.aitusoftware.proxygen.common.ParameterDescriptor;
+import com.aitusoftware.proxygen.common.Types;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -6,7 +10,7 @@ import java.io.Writer;
 import java.util.Arrays;
 import java.util.List;
 
-final class PublisherGenerator
+public final class PublisherGenerator
 {
     private static final List<String> REQUIRED_IMPORTS = Arrays.asList(
             "com.aitusoftware.transport.messaging.proxy.AbstractPublisher",
@@ -15,7 +19,7 @@ final class PublisherGenerator
             "com.aitusoftware.transport.messaging.proxy.Encoder"
     );
 
-    void generatePublisher(
+    public void generatePublisher(
             final String packageName, final String className, final String interfaceName,
             final MethodDescriptor[] methods, final List<String> imports,
             final Writer writer)
@@ -87,7 +91,7 @@ final class PublisherGenerator
             final ParameterDescriptor parameterType = parameterTypes[i];
             if (parameterType.getType().isPrimitive())
             {
-                staticLength += getPrimitiveTypeSize(parameterType.getType());
+                staticLength += Types.getPrimitiveTypeSize(parameterType.getType());
             }
             else if (CharSequence.class == parameterType.getType())
             {
@@ -101,29 +105,6 @@ final class PublisherGenerator
         }
 
         writer.append(" ").append(Integer.toString(staticLength)).append(";\n");
-    }
-
-    private int getPrimitiveTypeSize(final Class<?> type)
-    {
-        if (type == boolean.class || type == byte.class)
-        {
-            return 1;
-        }
-        if (type == short.class)
-        {
-            return 2;
-        }
-        if (type == int.class || type == char.class || type == float.class)
-        {
-            return 4;
-        }
-        if (type == long.class || type == double.class)
-        {
-            return 8;
-        }
-
-        throw new IllegalArgumentException(String.format(
-                "Unsupported primitive type: %s", type.getName()));
     }
 
     private void appendParameters(
@@ -148,12 +129,12 @@ final class PublisherGenerator
         {
             if (parameterType.getType() == null)
             {
-                writer.append("\t\tEncoder.encode").append(toMethodSuffix(parameterType.getTypeName())).
+                writer.append("\t\tEncoder.encode").append(Types.toMethodSuffix(parameterType.getTypeName())).
                         append("(wr.buffer(), ").append(parameterType.getName()).append(");\n");
             }
             else if (parameterType.getType().isPrimitive() || CharSequence.class == parameterType.getType())
             {
-                writer.append("\t\tEncoder.encode").append(toMethodSuffix(parameterType.getType().getSimpleName())).
+                writer.append("\t\tEncoder.encode").append(Types.toMethodSuffix(parameterType.getType().getSimpleName())).
                         append("(wr.buffer(), ").append(parameterType.getName()).append(");\n");
             }
             else
@@ -161,15 +142,5 @@ final class PublisherGenerator
                 throw new IllegalArgumentException("Unsupported parameter type: " + parameterType.getType().getName());
             }
         }
-    }
-
-    private String toMethodSuffix(final String name)
-    {
-        final char first = name.charAt(0);
-        if (Character.isLowerCase(first))
-        {
-            return Character.toUpperCase(first) + name.substring(1);
-        }
-        return name;
     }
 }
