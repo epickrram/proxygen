@@ -92,7 +92,7 @@ public class MessageBuilderGeneratorTest
                         "OrderDetails",
                         methods,
                         Collections.singletonList("foo.example.Requirement"),
-                        writer, processingEnv.getMessager());
+                        writer, null);
 
         assertThat(writer.toString(), is(GENERATED_SOURCE));
     }

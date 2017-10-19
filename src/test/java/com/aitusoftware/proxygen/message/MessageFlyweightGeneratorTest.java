@@ -10,7 +10,7 @@ import java.util.Collections;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
-public class FlyweightMessageGeneratorTest
+public class MessageFlyweightGeneratorTest
 {
     private static final String GENERATED_SOURCE =
                     "package com.aitusoftware.example;\n" +
@@ -68,7 +68,7 @@ public class FlyweightMessageGeneratorTest
                                 new ParameterDescriptor(null, double.class, "double")),
                 };
         final StringWriter writer = new StringWriter();
-        new FlyweightMessageGenerator().
+        new MessageFlyweightGenerator().
                 generateFlyweight("com.aitusoftware.example",
                         "OrderDetailsFlyweight",
                         "OrderDetails",

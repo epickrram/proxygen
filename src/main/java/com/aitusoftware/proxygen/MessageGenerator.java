@@ -4,8 +4,9 @@ package com.aitusoftware.proxygen;
 import com.aitusoftware.proxygen.common.Constants;
 import com.aitusoftware.proxygen.common.MethodDescriptor;
 import com.aitusoftware.proxygen.common.ParameterDescriptor;
-import com.aitusoftware.proxygen.message.FlyweightMessageGenerator;
+import com.aitusoftware.proxygen.message.MessageFlyweightGenerator;
 import com.aitusoftware.proxygen.message.MessageBuilderGenerator;
+import com.aitusoftware.proxygen.message.MessageSerialiserGenerator;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.RoundEnvironment;
@@ -87,25 +88,31 @@ public final class MessageGenerator extends AbstractProcessor
                 {
                     final String builderClassname = className.toString() + Constants.MESSAGE_BUILDER_SUFFIX;
                     final String flyweightClassname = className.toString() + Constants.MESSAGE_FLYWEIGHT_SUFFIX;
+                    final String serialiserClassname = className.toString() + Constants.MESSAGE_SERIALISER_SUFFIX;
 
                     final JavaFileObject builderSourceFile = processingEnv.getFiler().createSourceFile(packageName + "." + builderClassname, topicElement);
                     final Writer builderWriter = builderSourceFile.openWriter();
-                    processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING,
-                            "pn: " + packageName + ", bc: " + builderClassname + ", cn: " + className +
-                    "m: " + methods + ", bw: " + builderWriter, topicElement);
                     new MessageBuilderGenerator().generateMessageBuilder(packageName.toString(), builderClassname,
                             className.toString(),
                             methods.toArray(new MethodDescriptor[methods.size()]),
-                            Collections.singletonList(packageName + "." + className), builderWriter, processingEnv.getMessager());
+                            Collections.singletonList(packageName + "." + className), builderWriter, null);
                     builderWriter.close();
 
                     final JavaFileObject flyweightSourceFile = processingEnv.getFiler().createSourceFile(packageName + "." + flyweightClassname, topicElement);
                     final Writer flyweightWriter = flyweightSourceFile.openWriter();
-                    new FlyweightMessageGenerator().generateFlyweight(packageName.toString(), flyweightClassname,
+                    new MessageFlyweightGenerator().generateFlyweight(packageName.toString(), flyweightClassname,
                             className.toString(),
                             methods.toArray(new MethodDescriptor[methods.size()]),
                             Collections.singletonList(packageName + "." + className), flyweightWriter);
                     flyweightWriter.close();
+
+                    final JavaFileObject serialiserSourceFile = processingEnv.getFiler().createSourceFile(packageName + "." + serialiserClassname, topicElement);
+                    final Writer serialiserWriter = serialiserSourceFile.openWriter();
+                    new MessageSerialiserGenerator().generateSerialiser(packageName.toString(), serialiserClassname,
+                            className.toString(),
+                            methods.toArray(new MethodDescriptor[methods.size()]),
+                            Collections.singletonList(packageName + "." + className), serialiserWriter);
+                    serialiserWriter.close();
                 }
                 catch (IOException e)
                 {

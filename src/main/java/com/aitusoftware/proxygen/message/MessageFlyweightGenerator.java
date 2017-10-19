@@ -13,7 +13,7 @@ import java.util.List;
 import static com.aitusoftware.proxygen.common.Types.getPrimitiveTypeSize;
 import static com.aitusoftware.proxygen.common.Types.typeNameToType;
 
-public final class FlyweightMessageGenerator
+public final class MessageFlyweightGenerator
 {
     private static final List<String> REQUIRED_IMPORTS = Arrays.asList(
             "com.aitusoftware.transport.messaging.proxy.Decoder",

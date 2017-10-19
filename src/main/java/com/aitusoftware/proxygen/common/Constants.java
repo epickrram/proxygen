@@ -6,4 +6,5 @@ public interface Constants
     String PROXYGEN_SUBSCRIBER_SUFFIX = "ProxygenSubscriberImpl";
     String MESSAGE_BUILDER_SUFFIX = "Builder";
     String MESSAGE_FLYWEIGHT_SUFFIX = "Flyweight";
+    String MESSAGE_SERIALISER_SUFFIX = "Serialiser";
 }
