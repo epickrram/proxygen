@@ -1,11 +1,13 @@
 package com.aitusoftware.proxygen.message;
 
+import com.aitusoftware.proxygen.common.Constants;
 import com.aitusoftware.proxygen.common.MethodDescriptor;
 import com.aitusoftware.proxygen.common.Types;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.io.Writer;
+import java.util.Arrays;
 import java.util.List;
 
 import static com.aitusoftware.proxygen.common.Types.getPrimitiveTypeSize;
@@ -13,6 +15,10 @@ import static com.aitusoftware.proxygen.common.Types.typeNameToType;
 
 public final class MessageBuilderGenerator
 {
+    private static final List<String> REQUIRED_IMPORTS = Arrays.asList(
+            Constants.SIZED_INTERFACE
+    );
+
     public void generateMessageBuilder(
             final String packageName, final String className,
             final String interfaceName,
@@ -28,8 +34,14 @@ public final class MessageBuilderGenerator
                 writer.append("import ").append(_import).append(";\n");
             }
 
+            for (String _import : REQUIRED_IMPORTS)
+            {
+                writer.append("import ").append(_import).append(";\n");
+            }
+
             writer.append("\n\npublic class ").append(className).
                     append(" implements ").append(interfaceName).
+                    append(", ").append("Sized").
                     append(" {\n\n");
             final StringBuilder fieldBuilder = new StringBuilder();
             final StringBuilder resetBuilder = new StringBuilder();
@@ -64,7 +76,7 @@ public final class MessageBuilderGenerator
                 }
                 else if(Types.isCharSequence(returnType))
                 {
-                    lengthBuilder.append("(").append(translator.fieldName).append(".length() * 4) + 4 + ");
+                    lengthBuilder.append("(").append(translator.fieldName).append(".length() * 2) + 4 + ");
                     fieldBuilder.append("\tprivate StringBuilder ").append(translator.fieldName).append(" = new StringBuilder();\n");
                     resetBuilder.append("\t\tthis.").append(translator.fieldName).append(".setLength(0);\n");
                     writer.append("\t\tthis.").append(translator.fieldName).append(".setLength(0);\n");
@@ -72,6 +84,10 @@ public final class MessageBuilderGenerator
                             append(translator.fieldName).append(");\n");
                     writer.append("\t\treturn this;\n");
                     writer.append("\t}\n\n");
+                }
+                else
+                {
+                    throw new IllegalArgumentException("Unsupported type: " + method.getReturnType());
                 }
 
                 writer.append("\tpublic ").append(method.getReturnType().getTypeName()).append(" ").

@@ -1,11 +1,11 @@
 package com.aitusoftware.proxygen;
 
 
-import com.aitusoftware.proxygen.common.Constants;
 import com.aitusoftware.proxygen.common.MethodDescriptor;
 import com.aitusoftware.proxygen.common.ParameterDescriptor;
-import com.aitusoftware.proxygen.message.MessageFlyweightGenerator;
 import com.aitusoftware.proxygen.message.MessageBuilderGenerator;
+import com.aitusoftware.proxygen.message.MessageClassnames;
+import com.aitusoftware.proxygen.message.MessageFlyweightGenerator;
 import com.aitusoftware.proxygen.message.MessageSerialiserGenerator;
 
 import javax.annotation.processing.AbstractProcessor;
@@ -42,19 +42,19 @@ public final class MessageGenerator extends AbstractProcessor
     {
         final TypeElement typeElement = processingEnv.getElementUtils().getTypeElement(MESSAGE_ANNOTATION_CLASS);
         final Set<? extends Element> topicElements = roundEnv.getElementsAnnotatedWith(typeElement);
-        for (Element topicElement : topicElements)
+        for (Element messageElement : topicElements)
         {
-            if (topicElement.getKind() == ElementKind.INTERFACE)
+            if (messageElement.getKind() == ElementKind.INTERFACE)
             {
-                final Name className = topicElement.getSimpleName();
-                final Name packageName = processingEnv.getElementUtils().getPackageOf(topicElement).getQualifiedName();
+                final Name className = messageElement.getSimpleName();
+                final Name packageName = processingEnv.getElementUtils().getPackageOf(messageElement).getQualifiedName();
                 final String identifier = packageName.toString() + "." + className.toString();
                 if (generated.contains(identifier))
                 {
                     continue;
                 }
                 generated.add(identifier);
-                final List<? extends Element> enclosedElements = topicElement.getEnclosedElements();
+                final List<? extends Element> enclosedElements = messageElement.getEnclosedElements();
                 final List<MethodDescriptor> methods = new ArrayList<>();
                 int i = 0;
 
@@ -67,7 +67,13 @@ public final class MessageGenerator extends AbstractProcessor
                         List<? extends VariableElement> params = methodElement.getParameters();
                         final List<ParameterDescriptor> parameters = new ArrayList<>();
 
-                        // TODO all methods should be no-arg
+                        if (!params.isEmpty())
+                        {
+                            processingEnv.getMessager().
+                                    printMessage(Diagnostic.Kind.ERROR,
+                                            "All methods on @Message must be no-arg non-void-returning methods",
+                                            messageElement);
+                        }
                         for (VariableElement param : params)
                         {
                             final Name parameterName = param.getSimpleName();
@@ -86,11 +92,11 @@ public final class MessageGenerator extends AbstractProcessor
 
                 try
                 {
-                    final String builderClassname = className.toString() + Constants.MESSAGE_BUILDER_SUFFIX;
-                    final String flyweightClassname = className.toString() + Constants.MESSAGE_FLYWEIGHT_SUFFIX;
-                    final String serialiserClassname = className.toString() + Constants.MESSAGE_SERIALISER_SUFFIX;
+                    final String builderClassname = MessageClassnames.toBuilder(className.toString());
+                    final String flyweightClassname = MessageClassnames.toFlyweight(className.toString());
+                    final String serialiserClassname = MessageClassnames.toSerialiser(className.toString());
 
-                    final JavaFileObject builderSourceFile = processingEnv.getFiler().createSourceFile(packageName + "." + builderClassname, topicElement);
+                    final JavaFileObject builderSourceFile = processingEnv.getFiler().createSourceFile(packageName + "." + builderClassname, messageElement);
                     final Writer builderWriter = builderSourceFile.openWriter();
                     new MessageBuilderGenerator().generateMessageBuilder(packageName.toString(), builderClassname,
                             className.toString(),
@@ -98,7 +104,7 @@ public final class MessageGenerator extends AbstractProcessor
                             Collections.singletonList(packageName + "." + className), builderWriter);
                     builderWriter.close();
 
-                    final JavaFileObject flyweightSourceFile = processingEnv.getFiler().createSourceFile(packageName + "." + flyweightClassname, topicElement);
+                    final JavaFileObject flyweightSourceFile = processingEnv.getFiler().createSourceFile(packageName + "." + flyweightClassname, messageElement);
                     final Writer flyweightWriter = flyweightSourceFile.openWriter();
                     new MessageFlyweightGenerator().generateFlyweight(packageName.toString(), flyweightClassname,
                             className.toString(),
@@ -106,7 +112,7 @@ public final class MessageGenerator extends AbstractProcessor
                             Collections.singletonList(packageName + "." + className), flyweightWriter);
                     flyweightWriter.close();
 
-                    final JavaFileObject serialiserSourceFile = processingEnv.getFiler().createSourceFile(packageName + "." + serialiserClassname, topicElement);
+                    final JavaFileObject serialiserSourceFile = processingEnv.getFiler().createSourceFile(packageName + "." + serialiserClassname, messageElement);
                     final Writer serialiserWriter = serialiserSourceFile.openWriter();
                     new MessageSerialiserGenerator().generateSerialiser(packageName.toString(), serialiserClassname,
                             className.toString(),
@@ -117,7 +123,7 @@ public final class MessageGenerator extends AbstractProcessor
                 catch (IOException e)
                 {
                     processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING,
-                            "Could not create source file: " + e.getMessage(), topicElement);
+                            "Could not create source file: " + e.getMessage(), messageElement);
                 }
             }
             else
@@ -128,32 +134,5 @@ public final class MessageGenerator extends AbstractProcessor
         }
 
         return false;
-    }
-
-    private String getTopLevelPackage(final Set<String> classNames)
-    {
-        String classNameWithMostPackages = null;
-        int maxPackageCount = 0;
-        for (String className : classNames)
-        {
-            final int packages = className.split("\\.").length - 1;
-            if (packages > maxPackageCount || classNameWithMostPackages == null)
-            {
-                maxPackageCount = packages;
-                classNameWithMostPackages = className;
-            }
-        }
-
-        final String[] packages = classNameWithMostPackages.split("\\.");
-        final StringBuilder topLevelPackage = new StringBuilder(packages[0]);
-        int ptr = 1;
-        while (classNames.stream().
-                filter(cn -> cn.startsWith(topLevelPackage.toString())).
-                count() == classNames.size())
-        {
-            topLevelPackage.append(".").append(packages[ptr++]);
-        }
-
-        return topLevelPackage.toString();
     }
 }

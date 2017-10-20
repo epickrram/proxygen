@@ -1,7 +1,9 @@
 package com.aitusoftware.proxygen.publisher;
 
+import com.aitusoftware.proxygen.common.Constants;
 import com.aitusoftware.proxygen.common.MethodDescriptor;
 import com.aitusoftware.proxygen.common.ParameterDescriptor;
+import com.aitusoftware.proxygen.common.ParameterDescriptorSorter;
 import com.aitusoftware.proxygen.common.Types;
 
 import java.io.IOException;
@@ -89,7 +91,7 @@ public final class PublisherGenerator
         for (int i = 0; i < parameterTypes.length; i++)
         {
             final ParameterDescriptor parameterType = parameterTypes[i];
-            if (parameterType.getType().isPrimitive())
+            if (Types.isPrimitive(parameterType.getType()))
             {
                 staticLength += Types.getPrimitiveTypeSize(parameterType.getType());
             }
@@ -100,7 +102,8 @@ public final class PublisherGenerator
             }
             else
             {
-                throw new IllegalArgumentException("Unsupported parameter type: " + parameterType.getType().getName());
+                writer.append("((Sized) ").append(parameterType.getName()).
+                        append(").length() + ");
             }
         }
 
@@ -125,21 +128,26 @@ public final class PublisherGenerator
     private void encodeArguments(
             final ParameterDescriptor[] parameterTypes, final Writer writer) throws IOException
     {
-        for (final ParameterDescriptor parameterType : parameterTypes)
+        final ParameterDescriptor[] copy = new ParameterDescriptor[parameterTypes.length];
+        System.arraycopy(parameterTypes, 0, copy, 0, copy.length);
+        Arrays.sort(copy, ParameterDescriptorSorter.INSTANCE);
+        for (final ParameterDescriptor parameterType : copy)
         {
-            if (parameterType.getType() == null)
-            {
-                writer.append("\t\tEncoder.encode").append(Types.toMethodSuffix(parameterType.getTypeName())).
-                        append("(wr.buffer(), ").append(parameterType.getName()).append(");\n");
-            }
-            else if (parameterType.getType().isPrimitive() || CharSequence.class == parameterType.getType())
+            if (Types.isPrimitive(parameterType.getType()) || Types.isCharSequence(parameterType.getType()))
             {
                 writer.append("\t\tEncoder.encode").append(Types.toMethodSuffix(parameterType.getType().getSimpleName())).
                         append("(wr.buffer(), ").append(parameterType.getName()).append(");\n");
             }
             else
             {
-                throw new IllegalArgumentException("Unsupported parameter type: " + parameterType.getType().getName());
+                // TODO add serialiser to imports, only refer to simple name
+                writer.append("\t\tfinal ").append(parameterType.getTypeName()).
+                        append(Constants.MESSAGE_SERIALISER_SUFFIX).append(" serialiser = new ").
+                        append(parameterType.getTypeName()).
+                        append(Constants.MESSAGE_SERIALISER_SUFFIX).append("();\n");
+
+                writer.append("\t\tserialiser.serialise(").append(parameterType.getName()).
+                        append(", wr.buffer());\n");
             }
         }
     }

@@ -1,7 +1,10 @@
 package com.aitusoftware.proxygen.publisher;
 
+import com.aitusoftware.proxygen.common.Constants;
 import com.aitusoftware.proxygen.common.MethodDescriptor;
 import com.aitusoftware.proxygen.common.ParameterDescriptor;
+import com.aitusoftware.proxygen.common.ParameterDescriptorSorter;
+import com.aitusoftware.proxygen.common.Types;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -137,11 +140,13 @@ public final class SubscriberGenerator
     private void appendParameters(
             final ParameterDescriptor[] parameterTypes, final Writer writer) throws IOException
     {
-        for (final ParameterDescriptor parameterType : parameterTypes)
+        final ParameterDescriptor[] copy = new ParameterDescriptor[parameterTypes.length];
+        System.arraycopy(parameterTypes, 0, copy, 0, copy.length);
+        Arrays.sort(copy, ParameterDescriptorSorter.INSTANCE);
+        for (final ParameterDescriptor parameterType : copy)
         {
 
-            final String methodSuffix = toMethodSuffix(parameterType.getType().getSimpleName());
-            if (methodSuffix.equals("CharSequence"))
+            if (Types.isCharSequence(parameterType.getType()))
             {
                 requiredNumberOfStringBuilders++;
 
@@ -152,15 +157,28 @@ public final class SubscriberGenerator
                         append(".get();\n");
                 writer.append("\t\t\tfinal ").append(parameterType.getTypeName()).
                         append(" ").append(parameterType.getName()).
-                        append(" = Decoder.decode").append(methodSuffix).
+                        append(" = Decoder.decodeCharSequence").
                         append("(buffer, csq_").append(variableSuffix).append(");\n");
+
             }
-            else
+            else if (Types.isPrimitive(parameterType.getType()))
             {
+                final String methodSuffix = toMethodSuffix(parameterType.getType().getSimpleName());
                 writer.append("\t\t\tfinal ").append(parameterType.getTypeName()).
                         append(" ").append(parameterType.getName()).
                         append(" = Decoder.decode").append(methodSuffix).
                         append("(buffer);\n");
+            }
+            else
+            {
+                // TODO need to assign buffer position for each flyweight/CharSequence
+                writer.append("\t\t\tfinal ").append(parameterType.getTypeName()).
+                        append(Constants.MESSAGE_FLYWEIGHT_SUFFIX).append(" ").
+                        append(parameterType.getName()).append(" = new ").
+                        append(parameterType.getTypeName()).
+                        append(Constants.MESSAGE_FLYWEIGHT_SUFFIX).append("();\n");
+                writer.append("\t\t\t").append(parameterType.getName()).
+                        append(".reset(buffer);\n");
             }
         }
     }

@@ -14,9 +14,10 @@ public class MessageBuilderGeneratorTest
             "package com.aitusoftware.example;\n" +
                     "\n" +
                     "import foo.example.Requirement;\n" +
+                    "import com.aitusoftware.transport.messaging.Sized;\n" +
                     "\n" +
                     "\n" +
-                    "public class OrderDetailsBuilder implements OrderDetails {\n" +
+                    "public class OrderDetailsBuilder implements OrderDetails, Sized {\n" +
                     "\n" +
                     "\tpublic OrderDetailsBuilder orderId(long orderId) {\n" +
                     "\t\tthis.orderId = orderId;\n" +
@@ -69,7 +70,7 @@ public class MessageBuilderGeneratorTest
                     "\t}\n" +
                     "\n" +
                     "\tpublic int length() {\n" +
-                    "\t\t return 8 + 8 + 8 + (descriptor.length() * 4) + 4 + 0;\n" +
+                    "\t\t return 8 + 8 + 8 + (descriptor.length() * 2) + 4 + 0;\n" +
                     "\t}\n" +
                     "\n" +
                     "}";

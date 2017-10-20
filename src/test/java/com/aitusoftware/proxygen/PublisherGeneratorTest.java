@@ -32,8 +32,8 @@ public class PublisherGeneratorTest {
                     "\t\t\n" +
                     "\t\tfinal int recordLength = (word.length() * 4) + 4  +  4;\n" +
                     "\t\tfinal WritableRecord wr = acquireRecord(recordLength, (byte) 0);\n" +
-                    "\t\tEncoder.encodeCharSequence(wr.buffer(), word);\n" +
                     "\t\tEncoder.encodeInt(wr.buffer(), count);\n" +
+                    "\t\tEncoder.encodeCharSequence(wr.buffer(), word);\n" +
                     "\t\twr.commit();\n" +
                     "\t}\n" +
                     "\n" +
@@ -42,8 +42,21 @@ public class PublisherGeneratorTest {
                     "\t\t\n" +
                     "\t\tfinal int recordLength = (word.length() * 4) + 4  +  4;\n" +
                     "\t\tfinal WritableRecord wr = acquireRecord(recordLength, (byte) 1);\n" +
-                    "\t\tEncoder.encodeCharSequence(wr.buffer(), word);\n" +
                     "\t\tEncoder.encodeInt(wr.buffer(), count);\n" +
+                    "\t\tEncoder.encodeCharSequence(wr.buffer(), word);\n" +
+                    "\t\twr.commit();\n" +
+                    "\t}\n" +
+                    "\n" +
+                    "\tpublic void composite(\n" +
+                    "\t\tfinal java.lang.CharSequence word, final com.example.OrderDetails orderDetails, final com.example.OrderDetails moreOrderDetails) {\n" +
+                    "\t\t\n" +
+                    "\t\tfinal int recordLength = (word.length() * 4) + 4  + ((Sized) orderDetails).length() + ((Sized) moreOrderDetails).length() +  0;\n" +
+                    "\t\tfinal WritableRecord wr = acquireRecord(recordLength, (byte) 2);\n" +
+                    "\t\tfinal com.example.OrderDetailsSerialiser serialiser = new com.example.OrderDetailsSerialiser();\n" +
+                    "\t\tserialiser.serialise(orderDetails, wr.buffer());\n" +
+                    "\t\tfinal com.example.OrderDetailsSerialiser serialiser = new com.example.OrderDetailsSerialiser();\n" +
+                    "\t\tserialiser.serialise(moreOrderDetails, wr.buffer());\n" +
+                    "\t\tEncoder.encodeCharSequence(wr.buffer(), word);\n" +
                     "\t\twr.commit();\n" +
                     "\t}\n" +
                     "\n" +
@@ -68,7 +81,13 @@ public class PublisherGeneratorTest {
                                 new ParameterDescriptor[]{
                                         new ParameterDescriptor("word", CharSequence.class, "java.lang.CharSequence"),
                                         new ParameterDescriptor("count", int.class, "int")
-                                })
+                                }),
+                        new MethodDescriptor(0, "composite",
+                                new ParameterDescriptor[]{
+                                        new ParameterDescriptor("word", CharSequence.class, "java.lang.CharSequence"),
+                                        new ParameterDescriptor("orderDetails", null, "com.example.OrderDetails"),
+                                        new ParameterDescriptor("moreOrderDetails", null, "com.example.OrderDetails")
+                                }),
                 },
                 Collections.emptyList(),
                 writer);

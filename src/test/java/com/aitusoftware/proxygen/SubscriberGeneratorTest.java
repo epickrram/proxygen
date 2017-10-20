@@ -32,10 +32,21 @@ public class SubscriberGeneratorTest
                     "\n" +
                     "\tprivate static final class Invoker_0_say implements MethodInvoker<TestSubscriber> {\n" +
                     "\t\tpublic void invoke(final TestSubscriber implementation, final ByteBuffer buffer) {\n" +
+                    "\t\t\tfinal int count = Decoder.decodeInt(buffer);\n" +
                     "\t\t\tfinal StringBuilder csq_0 = CACHED_CSQ_0.get();\n" +
                     "\t\t\tfinal java.lang.CharSequence word = Decoder.decodeCharSequence(buffer, csq_0);\n" +
-                    "\t\t\tfinal int count = Decoder.decodeInt(buffer);\n" +
                     "\t\t\timplementation.say(word, count);\n" +
+                    "\t\t}\n" +
+                    "\t}\n" +
+                    "\tprivate static final class Invoker_1_composite implements MethodInvoker<TestSubscriber> {\n" +
+                    "\t\tpublic void invoke(final TestSubscriber implementation, final ByteBuffer buffer) {\n" +
+                    "\t\t\tfinal com.example.OrderDetailsFlyweight orderDetails = new com.example.OrderDetailsFlyweight();\n" +
+                    "\t\t\torderDetails.reset(buffer);\n" +
+                    "\t\t\tfinal com.example.OrderDetailsFlyweight moreOrderDetails = new com.example.OrderDetailsFlyweight();\n" +
+                    "\t\t\tmoreOrderDetails.reset(buffer);\n" +
+                    "\t\t\tfinal StringBuilder csq_0 = CACHED_CSQ_0.get();\n" +
+                    "\t\t\tfinal java.lang.CharSequence word = Decoder.decodeCharSequence(buffer, csq_0);\n" +
+                    "\t\t\timplementation.composite(word, orderDetails, moreOrderDetails);\n" +
                     "\t\t}\n" +
                     "\t}\n" +
                     "\n" +
@@ -43,8 +54,9 @@ public class SubscriberGeneratorTest
                     "\n" +
                     "\n" +
                     "\tprivate static MethodInvoker[] generateInvokers() {\n" +
-                    "\t\tfinal MethodInvoker[] invokers = new MethodInvoker[1];\n" +
+                    "\t\tfinal MethodInvoker[] invokers = new MethodInvoker[2];\n" +
                     "\t\tinvokers[0] = new Invoker_0_say();\n" +
+                    "\t\tinvokers[1] = new Invoker_1_composite();\n" +
                     "\t\treturn invokers;\n" +
                     "\t}\n" +
                     "\tprivate static final ThreadLocal<StringBuilder> CACHED_CSQ_0 = ThreadLocal.withInitial(StringBuilder::new);\n" +
@@ -65,7 +77,15 @@ public class SubscriberGeneratorTest
                                 new ParameterDescriptor[]{
                                         new ParameterDescriptor("word", CharSequence.class, "java.lang.CharSequence"),
                                         new ParameterDescriptor("count", int.class, "int")
-                                })},
+                                }),
+                        new MethodDescriptor(0, "composite",
+                                new ParameterDescriptor[]{
+                                        new ParameterDescriptor("word", CharSequence.class, "java.lang.CharSequence"),
+                                        new ParameterDescriptor("orderDetails", null, "com.example.OrderDetails"),
+                                        new ParameterDescriptor("moreOrderDetails", null, "com.example.OrderDetails")
+                                }),
+
+                },
                 Collections.emptyList(),
                 writer);
 

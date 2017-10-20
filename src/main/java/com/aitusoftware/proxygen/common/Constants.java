@@ -7,4 +7,5 @@ public interface Constants
     String MESSAGE_BUILDER_SUFFIX = "Builder";
     String MESSAGE_FLYWEIGHT_SUFFIX = "Flyweight";
     String MESSAGE_SERIALISER_SUFFIX = "Serialiser";
+    String SIZED_INTERFACE = "com.aitusoftware.transport.messaging.Sized";
 }

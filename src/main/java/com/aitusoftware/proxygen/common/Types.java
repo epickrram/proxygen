@@ -122,7 +122,7 @@ public enum Types
 
     public static boolean isPrimitive(final Class<?> cls)
     {
-        return cls.isPrimitive();
+        return cls != null && cls.isPrimitive();
     }
 
     public static boolean isCharSequence(final Class<?> cls)

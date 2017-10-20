@@ -1,11 +1,11 @@
 package com.aitusoftware.proxygen;
 
 
-import com.aitusoftware.proxygen.publisher.AddressSpaceGenerator;
-import com.aitusoftware.proxygen.common.Constants;
 import com.aitusoftware.proxygen.common.MethodDescriptor;
-import com.aitusoftware.proxygen.publisher.NetAddress;
 import com.aitusoftware.proxygen.common.ParameterDescriptor;
+import com.aitusoftware.proxygen.publisher.AddressSpaceGenerator;
+import com.aitusoftware.proxygen.publisher.NetAddress;
+import com.aitusoftware.proxygen.publisher.ProxyClassnames;
 import com.aitusoftware.proxygen.publisher.PublisherGenerator;
 import com.aitusoftware.proxygen.publisher.SubscriberGenerator;
 
@@ -113,8 +113,8 @@ public final class AnnotationPublisherGenerator extends AbstractProcessor
 
                 try
                 {
-                    final String publisherClassname = className.toString() + Constants.PROXYGEN_PUBLISHER_SUFFIX;
-                    final String subscriberClassname = className.toString() + Constants.PROXYGEN_SUBSCRIBER_SUFFIX;
+                    final String publisherClassname = ProxyClassnames.toPublisher(className.toString());
+                    final String subscriberClassname = ProxyClassnames.toSubscriber(className.toString());
 
                     final JavaFileObject publisherSourceFile = processingEnv.getFiler().createSourceFile(packageName + "." + publisherClassname, topicElement);
                     final Writer publisherWriter = publisherSourceFile.openWriter();

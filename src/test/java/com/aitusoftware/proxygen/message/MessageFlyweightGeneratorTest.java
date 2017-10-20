@@ -15,10 +15,11 @@ public class MessageFlyweightGeneratorTest
                     "\n" +
                     "import foo.example.Requirement;\n" +
                     "import com.aitusoftware.transport.messaging.proxy.Decoder;\n" +
+                    "import com.aitusoftware.transport.messaging.Sized;\n" +
                     "import java.nio.ByteBuffer;\n" +
                     "\n" +
                     "\n" +
-                    "public class OrderDetailsFlyweight implements OrderDetails {\n" +
+                    "public class OrderDetailsFlyweight implements OrderDetails, Sized {\n" +
                     "\n" +
                     "\tprivate ByteBuffer buffer;\n" +
                     "\tprivate int offset;\n" +
@@ -54,10 +55,10 @@ public class MessageFlyweightGeneratorTest
                     "\t}\n" +
                     "\n" +
                     "\tpublic int length() {\n" +
-                    "\t\t return 8 + 8 + 8 + (getDescriptor().length() * 4) + 4 + 0;\n" +
+                    "\t\t return 8 + 8 + 8 + (getDescriptor().length() * 2) + 4 + 0;\n" +
                     "\t}\n" +
-                    "\n\tprivate final StringBuilder descriptor = new StringBuilder();" +
                     "\n" +
+                    "\tprivate final StringBuilder descriptor = new StringBuilder();\n" +
                     "}";
         /*
     public interface OrderDetails extends Copyable<OrderDetails>

@@ -18,6 +18,7 @@ public final class MessageFlyweightGenerator
 {
     private static final List<String> REQUIRED_IMPORTS = Arrays.asList(
             "com.aitusoftware.transport.messaging.proxy.Decoder",
+            "com.aitusoftware.transport.messaging.Sized",
             "java.nio.ByteBuffer"
     );
 
@@ -42,6 +43,7 @@ public final class MessageFlyweightGenerator
 
             writer.append("\n\npublic class ").append(className).
                     append(" implements ").append(interfaceName).
+                    append(", ").append("Sized").
                     append(" {\n\n");
             writer.append("\tprivate ByteBuffer buffer;\n");
             writer.append("\tprivate int offset;\n\n");
@@ -87,7 +89,7 @@ public final class MessageFlyweightGenerator
 
                     fieldBuilder.append("\tprivate final StringBuilder ").append(translator.fieldName).
                             append(" = new StringBuilder();\n");
-                    lengthBuilder.append("(").append(method.getName()).append("().length() * 4) + 4").
+                    lengthBuilder.append("(").append(method.getName()).append("().length() * 2) + 4").
                             append(" + ");
                 }
             }
