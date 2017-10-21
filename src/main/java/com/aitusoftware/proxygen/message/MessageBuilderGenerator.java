@@ -117,10 +117,18 @@ public final class MessageBuilderGenerator
 
     private String getResetValueForType(final String typeName)
     {
-        if (typeName.indexOf('.') < 0)
+        final Class<?> type = Types.typeNameToType(typeName);
+        if (type == null)
+        {
+            return "null";
+        }
+        if (Types.isBoolean(type))
+        {
+            return "false";
+        }
+        else
         {
             return "0";
         }
-        return "null";
     }
 }

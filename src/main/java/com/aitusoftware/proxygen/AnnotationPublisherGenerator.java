@@ -153,12 +153,15 @@ public final class AnnotationPublisherGenerator extends AbstractProcessor
             try
             {
                 final String packageName = getTopLevelPackage(addressSpace.keySet());
+                final String fileName = packageName + "." + AddressSpaceGenerator.GENERATED_CLASS_NAME;
                 final JavaFileObject addressSpaceSourceFile = processingEnv.getFiler().
-                        createSourceFile(packageName + "." + AddressSpaceGenerator.GENERATED_CLASS_NAME);
+                        createSourceFile(fileName);
+
                 try(final Writer addressSpaceWriter = addressSpaceSourceFile.openWriter())
                 {
                     new AddressSpaceGenerator().generateAddressSpace(packageName, addressSpace, addressSpaceWriter);
                 }
+
             }
             catch (IOException e)
             {

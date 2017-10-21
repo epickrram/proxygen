@@ -18,7 +18,8 @@ public final class PublisherGenerator
             "com.aitusoftware.transport.messaging.proxy.AbstractPublisher",
             "com.aitusoftware.transport.buffer.WritableRecord",
             "com.aitusoftware.transport.buffer.PageCache",
-            "com.aitusoftware.transport.messaging.proxy.Encoder"
+            "com.aitusoftware.transport.messaging.proxy.Encoder",
+            "com.aitusoftware.transport.messaging.Sized"
     );
 
     public void generatePublisher(
