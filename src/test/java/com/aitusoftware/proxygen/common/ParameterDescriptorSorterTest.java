@@ -29,8 +29,8 @@ public class ParameterDescriptorSorterTest
                 new ParameterDescriptor("bByteArg", null, "byte"),
                 new ParameterDescriptor("doubleArg", null, "double"),
                 new ParameterDescriptor("longArg", null, "long"),
-                new ParameterDescriptor("orderDetails", null, "com.example.OrderDetails"),
                 new ParameterDescriptor("word", CharSequence.class, "java.lang.CharSequence"),
+                new ParameterDescriptor("orderDetails", null, "com.example.OrderDetails"),
         };
 
         assertThat(Arrays.stream(params).map(ParameterDescriptor::getName).collect(Collectors.toList()),

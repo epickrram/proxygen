@@ -141,12 +141,8 @@ public final class PublisherGenerator
             else
             {
                 // TODO add serialiser to imports, only refer to simple name
-                writer.append("\t\tfinal ").append(parameterType.getTypeName()).
-                        append(Constants.MESSAGE_SERIALISER_SUFFIX).append(" serialiser = new ").
-                        append(parameterType.getTypeName()).
-                        append(Constants.MESSAGE_SERIALISER_SUFFIX).append("();\n");
-
-                writer.append("\t\tserialiser.serialise(").append(parameterType.getName()).
+                writer.append("\t\t").append(parameterType.getTypeName()).
+                        append(Constants.MESSAGE_SERIALISER_SUFFIX).append(".serialise(").append(parameterType.getName()).
                         append(", wr.buffer());\n");
             }
         }

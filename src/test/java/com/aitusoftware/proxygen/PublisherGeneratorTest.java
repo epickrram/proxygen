@@ -52,11 +52,9 @@ public class PublisherGeneratorTest {
                     "\t\t\n" +
                     "\t\tfinal int recordLength = (word.length() * 4) + 4  + ((Sized) orderDetails).length() + ((Sized) moreOrderDetails).length() +  0;\n" +
                     "\t\tfinal WritableRecord wr = acquireRecord(recordLength, (byte) 2);\n" +
-                    "\t\tfinal com.example.OrderDetailsSerialiser serialiser = new com.example.OrderDetailsSerialiser();\n" +
-                    "\t\tserialiser.serialise(orderDetails, wr.buffer());\n" +
-                    "\t\tfinal com.example.OrderDetailsSerialiser serialiser = new com.example.OrderDetailsSerialiser();\n" +
-                    "\t\tserialiser.serialise(moreOrderDetails, wr.buffer());\n" +
                     "\t\tEncoder.encodeCharSequence(wr.buffer(), word);\n" +
+                    "\t\tcom.example.OrderDetailsSerialiser.serialise(orderDetails, wr.buffer());\n" +
+                    "\t\tcom.example.OrderDetailsSerialiser.serialise(moreOrderDetails, wr.buffer());\n" +
                     "\t\twr.commit();\n" +
                     "\t}\n" +
                     "\n" +

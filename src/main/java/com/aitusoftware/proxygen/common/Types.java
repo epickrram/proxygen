@@ -120,6 +120,25 @@ public enum Types
         return name;
     }
 
+    public static String toSimpleName(final String name)
+    {
+        if (name.indexOf('.') > -1)
+        {
+            return name.substring(name.lastIndexOf('.') + 1);
+        }
+        return name;
+    }
+
+    public static String toFieldName(final String name)
+    {
+        if (Character.isUpperCase(name.charAt(0)))
+        {
+            return Character.toLowerCase(name.charAt(0)) + name.substring(1);
+        }
+
+        return "_" + name;
+    }
+
     public static boolean isPrimitive(final Class<?> cls)
     {
         return cls != null && cls.isPrimitive();

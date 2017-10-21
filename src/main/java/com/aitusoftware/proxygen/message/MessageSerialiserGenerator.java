@@ -38,7 +38,7 @@ public final class MessageSerialiserGenerator
 
             writer.append("\n\npublic class ").append(className).
                     append(" {\n\n").
-                    append("\tpublic void serialise(final ").
+                    append("\tpublic static void serialise(final ").
                     append(interfaceName).append(" _instance, final ByteBuffer buffer) {\n");
 
             for (MethodDescriptor method : methods)

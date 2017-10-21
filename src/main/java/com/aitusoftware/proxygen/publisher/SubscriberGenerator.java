@@ -1,16 +1,18 @@
 package com.aitusoftware.proxygen.publisher;
 
-import com.aitusoftware.proxygen.common.Constants;
 import com.aitusoftware.proxygen.common.MethodDescriptor;
 import com.aitusoftware.proxygen.common.ParameterDescriptor;
 import com.aitusoftware.proxygen.common.ParameterDescriptorSorter;
 import com.aitusoftware.proxygen.common.Types;
+import com.aitusoftware.proxygen.message.MessageClassnames;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.io.Writer;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public final class SubscriberGenerator
 {
@@ -57,13 +59,10 @@ public final class SubscriberGenerator
                     append("\t\tfinal MethodInvoker[] invokers = new MethodInvoker[").
                     append(methods.length).append("];\n");
 
-            final StringBuilder threadLocalStringBuilderSource = new StringBuilder();
-
             for (MethodDescriptor descriptor : methods)
             {
                 requiredNumberOfStringBuilders = 0;
                 appendInvoker(descriptor, methodId, generateInvokersMethodSource,
-                        threadLocalStringBuilderSource,
                         interfaceName, writer);
                 maxRequiredStringBuilders = Math.max(maxRequiredStringBuilders, requiredNumberOfStringBuilders);
                 methodId++;
@@ -74,6 +73,7 @@ public final class SubscriberGenerator
 
             writer.append("\n\n").append(generateInvokersMethodSource);
 
+            writer.append("\n\n");
             for (int i = 0; i < maxRequiredStringBuilders; i++)
             {
                 writer.append("\tprivate static final ThreadLocal<StringBuilder> CACHED_CSQ_").
@@ -99,9 +99,10 @@ public final class SubscriberGenerator
     private void appendInvoker(
             final MethodDescriptor descriptor, final byte methodId,
             final StringBuilder generateInvokersMethodSource,
-            final StringBuilder threadLocalStringBuilderSource,
-            final String interfaceName, final Writer writer) throws IOException
+            final String interfaceName,
+            final Writer writer) throws IOException
     {
+        final Map<String, Integer> requiredFlyweightClasses = new HashMap<>();
         final String invokerClassname = "Invoker_" + Byte.toString(methodId) + "_" + descriptor.getName();
         writer.append("\tprivate static final class ").
                 append(invokerClassname).
@@ -111,7 +112,7 @@ public final class SubscriberGenerator
         writer.append("\t\tpublic void invoke(final ").append(interfaceName).
                 append(" implementation, final ByteBuffer buffer) {\n");
 
-        appendParameters(descriptor.getParameterTypes(), writer);
+        appendParameters(descriptor.getParameterTypes(), requiredFlyweightClasses, writer);
 
         writer.append("\t\t\timplementation.").append(descriptor.getName()).append("(");
         final ParameterDescriptor[] parameterTypes = descriptor.getParameterTypes();
@@ -127,7 +128,20 @@ public final class SubscriberGenerator
         }
         writer.append(");\n");
 
-        writer.append("\t\t}\n");
+        writer.append("\t\t}\n\n");
+
+
+        for (String requiredFlyweightClass : requiredFlyweightClasses.keySet())
+        {
+            final int count = requiredFlyweightClasses.get(requiredFlyweightClass);
+            for (int i = 0; i < count; i++)
+            {
+                writer.append("\t\tprivate final ").append(requiredFlyweightClass).
+                        append(" ").append(Types.toFieldName(Types.toSimpleName(requiredFlyweightClass))).
+                        append("_").append(Integer.toString(i + 1)).
+                        append(" = new ").append(requiredFlyweightClass).append("();\n");
+            }
+        }
 
 
         writer.append("\t}\n");
@@ -138,11 +152,12 @@ public final class SubscriberGenerator
     }
 
     private void appendParameters(
-            final ParameterDescriptor[] parameterTypes, final Writer writer) throws IOException
+            final ParameterDescriptor[] parameterTypes, final Map<String, Integer> requiredFlyweightClasses, final Writer writer) throws IOException
     {
         final ParameterDescriptor[] copy = new ParameterDescriptor[parameterTypes.length];
         System.arraycopy(parameterTypes, 0, copy, 0, copy.length);
         Arrays.sort(copy, ParameterDescriptorSorter.INSTANCE);
+
         for (final ParameterDescriptor parameterType : copy)
         {
 
@@ -163,7 +178,7 @@ public final class SubscriberGenerator
             }
             else if (Types.isPrimitive(parameterType.getType()))
             {
-                final String methodSuffix = toMethodSuffix(parameterType.getType().getSimpleName());
+                final String methodSuffix = Types.toMethodSuffix(parameterType.getType().getSimpleName());
                 writer.append("\t\t\tfinal ").append(parameterType.getTypeName()).
                         append(" ").append(parameterType.getName()).
                         append(" = Decoder.decode").append(methodSuffix).
@@ -171,25 +186,23 @@ public final class SubscriberGenerator
             }
             else
             {
-                // TODO need to assign buffer position for each flyweight/CharSequence
-                writer.append("\t\t\tfinal ").append(parameterType.getTypeName()).
-                        append(Constants.MESSAGE_FLYWEIGHT_SUFFIX).append(" ").
-                        append(parameterType.getName()).append(" = new ").
-                        append(parameterType.getTypeName()).
-                        append(Constants.MESSAGE_FLYWEIGHT_SUFFIX).append("();\n");
-                writer.append("\t\t\t").append(parameterType.getName()).
+                final String flyweightClassname = MessageClassnames.toFlyweight(parameterType.getTypeName());
+                final Integer typeSuffix = requiredFlyweightClasses.computeIfAbsent(flyweightClassname, k -> 0) + 1;
+                requiredFlyweightClasses.put(flyweightClassname, typeSuffix);
+                writer.append("\t\t\t").
+                        append(Types.toFieldName(Types.toSimpleName(flyweightClassname))).
+                        append("_").append(typeSuffix.toString()).
                         append(".reset(buffer);\n");
+                writer.append("\t\t\tbuffer.position(buffer.position() + ").
+                        append(Types.toFieldName(Types.toSimpleName(flyweightClassname))).
+                        append("_").append(typeSuffix.toString()).
+                        append(".length());\n");
+                writer.append("\t\t\t").
+                        append("final ").append(parameterType.getTypeName()).append(" ").
+                        append(parameterType.getName()).append(" = ").
+                        append(Types.toFieldName(Types.toSimpleName(flyweightClassname))).
+                        append("_").append(typeSuffix.toString()).append(";\n");
             }
         }
-    }
-
-    private String toMethodSuffix(final String name)
-    {
-        final char first = name.charAt(0);
-        if (Character.isLowerCase(first))
-        {
-            return Character.toUpperCase(first) + name.substring(1);
-        }
-        return name;
     }
 }

@@ -37,17 +37,23 @@ public class SubscriberGeneratorTest
                     "\t\t\tfinal java.lang.CharSequence word = Decoder.decodeCharSequence(buffer, csq_0);\n" +
                     "\t\t\timplementation.say(word, count);\n" +
                     "\t\t}\n" +
+                    "\n" +
                     "\t}\n" +
                     "\tprivate static final class Invoker_1_composite implements MethodInvoker<TestSubscriber> {\n" +
                     "\t\tpublic void invoke(final TestSubscriber implementation, final ByteBuffer buffer) {\n" +
-                    "\t\t\tfinal com.example.OrderDetailsFlyweight orderDetails = new com.example.OrderDetailsFlyweight();\n" +
-                    "\t\t\torderDetails.reset(buffer);\n" +
-                    "\t\t\tfinal com.example.OrderDetailsFlyweight moreOrderDetails = new com.example.OrderDetailsFlyweight();\n" +
-                    "\t\t\tmoreOrderDetails.reset(buffer);\n" +
                     "\t\t\tfinal StringBuilder csq_0 = CACHED_CSQ_0.get();\n" +
                     "\t\t\tfinal java.lang.CharSequence word = Decoder.decodeCharSequence(buffer, csq_0);\n" +
+                    "\t\t\torderDetailsFlyweight_1.reset(buffer);\n" +
+                    "\t\t\tbuffer.position(buffer.position() + orderDetailsFlyweight_1.length());\n" +
+                    "\t\t\tfinal com.example.OrderDetails orderDetails = orderDetailsFlyweight_1;\n" +
+                    "\t\t\torderDetailsFlyweight_2.reset(buffer);\n" +
+                    "\t\t\tbuffer.position(buffer.position() + orderDetailsFlyweight_2.length());\n" +
+                    "\t\t\tfinal com.example.OrderDetails moreOrderDetails = orderDetailsFlyweight_2;\n" +
                     "\t\t\timplementation.composite(word, orderDetails, moreOrderDetails);\n" +
                     "\t\t}\n" +
+                    "\n" +
+                    "\t\tprivate final com.example.OrderDetailsFlyweight orderDetailsFlyweight_1 = new com.example.OrderDetailsFlyweight();\n" +
+                    "\t\tprivate final com.example.OrderDetailsFlyweight orderDetailsFlyweight_2 = new com.example.OrderDetailsFlyweight();\n" +
                     "\t}\n" +
                     "\n" +
                     "\n" +
@@ -59,6 +65,8 @@ public class SubscriberGeneratorTest
                     "\t\tinvokers[1] = new Invoker_1_composite();\n" +
                     "\t\treturn invokers;\n" +
                     "\t}\n" +
+                    "\n" +
+                    "\n" +
                     "\tprivate static final ThreadLocal<StringBuilder> CACHED_CSQ_0 = ThreadLocal.withInitial(StringBuilder::new);\n" +
                     "}\n";
 
