@@ -56,10 +56,21 @@ public class MessageBuilderGeneratorTest
                     "\t\treturn this.descriptor;\n" +
                     "\t}\n" +
                     "\n" +
+                    "\tpublic OrderDetailsBuilder setDescriptor2(java.lang.CharSequence descriptor2) {\n" +
+                    "\t\tthis.descriptor2.setLength(0);\n" +
+                    "\t\tthis.descriptor2.append(descriptor2);\n" +
+                    "\t\treturn this;\n" +
+                    "\t}\n" +
+                    "\n" +
+                    "\tpublic java.lang.CharSequence getDescriptor2() {\n" +
+                    "\t\treturn this.descriptor2;\n" +
+                    "\t}\n" +
+                    "\n" +
                     "\tprivate long orderId;\n" +
                     "\tprivate double quantity;\n" +
                     "\tprivate double price;\n" +
                     "\tprivate StringBuilder descriptor = new StringBuilder();\n" +
+                    "\tprivate StringBuilder descriptor2 = new StringBuilder();\n" +
                     "\n" +
                     "\n" +
                     "\tpublic void reset() {\n" +
@@ -67,13 +78,15 @@ public class MessageBuilderGeneratorTest
                     "\t\tthis.quantity = 0;\n" +
                     "\t\tthis.price = 0;\n" +
                     "\t\tthis.descriptor.setLength(0);\n" +
+                    "\t\tthis.descriptor2.setLength(0);\n" +
                     "\t}\n" +
                     "\n" +
                     "\tpublic int length() {\n" +
-                    "\t\t return 8 + 8 + 8 + (descriptor.length() * 2) + 4 + 0;\n" +
+                    "\t\t return 8 + 8 + 8 + (descriptor.length() * 2) + 4 + (descriptor2.length() * 2) + 4 + 0;\n" +
                     "\t}\n" +
                     "\n" +
                     "}";
+
 
     /*
     public interface OrderDetails extends Copyable<OrderDetails>

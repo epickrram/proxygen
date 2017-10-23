@@ -19,6 +19,7 @@ public class PublisherGeneratorTest {
                     "import com.aitusoftware.transport.buffer.WritableRecord;\n" +
                     "import com.aitusoftware.transport.buffer.PageCache;\n" +
                     "import com.aitusoftware.transport.messaging.proxy.Encoder;\n" +
+                    "import com.aitusoftware.transport.messaging.Sized;\n" +
                     "\n" +
                     "\n" +
                     "public class TestPublisherImpl extends AbstractPublisher implements TestPublisher {\n" +

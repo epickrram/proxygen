@@ -15,5 +15,7 @@ final class Fixtures
                             new ParameterDescriptor(null, double.class, "double")),
                     new MethodDescriptor(0, "getDescriptor", new ParameterDescriptor[0],
                             new ParameterDescriptor(null, CharSequence.class, "java.lang.CharSequence")),
+                    new MethodDescriptor(0, "getDescriptor2", new ParameterDescriptor[0],
+                            new ParameterDescriptor(null, CharSequence.class, "java.lang.CharSequence")),
             };
 }

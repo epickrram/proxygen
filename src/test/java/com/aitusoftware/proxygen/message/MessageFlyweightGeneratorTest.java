@@ -40,12 +40,17 @@ public class MessageFlyweightGeneratorTest
                     "\t\treturn Decoder.decodeCharSequenceAt(buffer, offset + 24, descriptor);\n" +
                     "\t}\n" +
                     "\n" +
+                    "\tpublic java.lang.CharSequence getDescriptor2() {\n" +
+                    "\t\treturn Decoder.decodeCharSequenceAt(buffer, offset + 24 + (getDescriptor().length() * 2) + 4, descriptor2);\n" +
+                    "\t}\n" +
+                    "\n" +
                     "\tpublic OrderDetails heapCopy() {\n" +
                     "\t\tfinal OrderDetailsBuilder builder = new OrderDetailsBuilder();\n" +
                     "\t\tbuilder.orderId(orderId());\n" +
                     "\t\tbuilder.setQuantity(getQuantity());\n" +
                     "\t\tbuilder.price(price());\n" +
                     "\t\tbuilder.setDescriptor(getDescriptor());\n" +
+                    "\t\tbuilder.setDescriptor2(getDescriptor2());\n" +
                     "\t\treturn builder;\n" +
                     "\t}\n" +
                     "\n" +
@@ -55,10 +60,11 @@ public class MessageFlyweightGeneratorTest
                     "\t}\n" +
                     "\n" +
                     "\tpublic int length() {\n" +
-                    "\t\t return 8 + 8 + 8 + (getDescriptor().length() * 2) + 4 + 0;\n" +
+                    "\t\t return 8 + 8 + 8 + (getDescriptor().length() * 2) + 4 + (getDescriptor2().length() * 2) + 4 + 0;\n" +
                     "\t}\n" +
                     "\n" +
                     "\tprivate final StringBuilder descriptor = new StringBuilder();\n" +
+                    "\tprivate final StringBuilder descriptor2 = new StringBuilder();\n" +
                     "}";
         /*
     public interface OrderDetails extends Copyable<OrderDetails>

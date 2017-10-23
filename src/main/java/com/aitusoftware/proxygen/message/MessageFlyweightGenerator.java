@@ -61,6 +61,8 @@ public final class MessageFlyweightGenerator
 
             int paramOffset = 0;
 
+            final StringBuilder charSequenceLengths = new StringBuilder();
+
             for (MethodDescriptor method : methods)
             {
                 final MethodTranslator translator = new MethodTranslator(method.getName());
@@ -84,6 +86,7 @@ public final class MessageFlyweightGenerator
                     writer.append("\t\treturn ").append("Decoder.decode").
                             append(Types.toMethodSuffix(method.getReturnType().getTypeName())).
                             append("At(buffer, offset + ").append(String.valueOf(paramOffset)).
+                            append(charSequenceLengths).
                             append(", ").append(translator.fieldName).append(");").append("\n");
                     writer.append("\t}\n\n");
 
@@ -91,6 +94,8 @@ public final class MessageFlyweightGenerator
                             append(" = new StringBuilder();\n");
                     lengthBuilder.append("(").append(method.getName()).append("().length() * 2) + 4").
                             append(" + ");
+
+                    charSequenceLengths.append(" + (").append(method.getName()).append("().length() * 2) + 4");
                 }
             }
             lengthBuilder.append("0;\n").append("\t}\n\n");
