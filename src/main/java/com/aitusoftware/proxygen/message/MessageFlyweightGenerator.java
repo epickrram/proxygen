@@ -2,6 +2,7 @@ package com.aitusoftware.proxygen.message;
 
 import com.aitusoftware.proxygen.common.Constants;
 import com.aitusoftware.proxygen.common.MethodDescriptor;
+import com.aitusoftware.proxygen.common.MethodDescriptorByReturnTypeSorter;
 import com.aitusoftware.proxygen.common.ParameterDescriptor;
 import com.aitusoftware.proxygen.common.Types;
 
@@ -62,8 +63,10 @@ public final class MessageFlyweightGenerator
             int paramOffset = 0;
 
             final StringBuilder charSequenceLengths = new StringBuilder();
-
-            for (MethodDescriptor method : methods)
+            final MethodDescriptor[] copy = new MethodDescriptor[methods.length];
+            System.arraycopy(methods, 0, copy, 0, copy.length);
+            Arrays.sort(copy, MethodDescriptorByReturnTypeSorter.INSTANCE);
+            for (MethodDescriptor method : copy)
             {
                 final MethodTranslator translator = new MethodTranslator(method.getName());
                 final Class<?> returnType = typeNameToType(method.getReturnType().getTypeName());

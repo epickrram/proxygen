@@ -21,8 +21,8 @@ public class MessageSerialiserGeneratorTest
                     "public class OrderDetailsFlyweight {\n" +
                     "\n" +
                     "\tpublic static void serialise(final OrderDetails _instance, final ByteBuffer buffer) {\n" +
-                    "\t\tEncoder.encodeLong(buffer, _instance.orderId());\n" +
                     "\t\tEncoder.encodeDouble(buffer, _instance.getQuantity());\n" +
+                    "\t\tEncoder.encodeLong(buffer, _instance.orderId());\n" +
                     "\t\tEncoder.encodeDouble(buffer, _instance.price());\n" +
                     "\t\tEncoder.encodeCharSequence(buffer, _instance.getDescriptor());\n" +
                     "\t\tEncoder.encodeCharSequence(buffer, _instance.getDescriptor2());\n" +

@@ -24,12 +24,12 @@ public class MessageFlyweightGeneratorTest
                     "\tprivate ByteBuffer buffer;\n" +
                     "\tprivate int offset;\n" +
                     "\n" +
-                    "\tpublic long orderId() {\n" +
-                    "\t\treturn Decoder.decodeLongAt(buffer, offset + 0);\n" +
+                    "\tpublic double getQuantity() {\n" +
+                    "\t\treturn Decoder.decodeDoubleAt(buffer, offset + 0);\n" +
                     "\t}\n" +
                     "\n" +
-                    "\tpublic double getQuantity() {\n" +
-                    "\t\treturn Decoder.decodeDoubleAt(buffer, offset + 8);\n" +
+                    "\tpublic long orderId() {\n" +
+                    "\t\treturn Decoder.decodeLongAt(buffer, offset + 8);\n" +
                     "\t}\n" +
                     "\n" +
                     "\tpublic double price() {\n" +

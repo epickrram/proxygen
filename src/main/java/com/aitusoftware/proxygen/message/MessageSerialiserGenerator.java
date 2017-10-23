@@ -1,6 +1,7 @@
 package com.aitusoftware.proxygen.message;
 
 import com.aitusoftware.proxygen.common.MethodDescriptor;
+import com.aitusoftware.proxygen.common.MethodDescriptorByReturnTypeSorter;
 import com.aitusoftware.proxygen.common.ParameterDescriptor;
 import com.aitusoftware.proxygen.common.Types;
 
@@ -41,7 +42,10 @@ public final class MessageSerialiserGenerator
                     append("\tpublic static void serialise(final ").
                     append(interfaceName).append(" _instance, final ByteBuffer buffer) {\n");
 
-            for (MethodDescriptor method : methods)
+            final MethodDescriptor[] copy = new MethodDescriptor[methods.length];
+            System.arraycopy(methods, 0, copy, 0, copy.length);
+            Arrays.sort(copy, MethodDescriptorByReturnTypeSorter.INSTANCE);
+            for (MethodDescriptor method : copy)
             {
                 final Class<?> returnType = Types.typeNameToType(method.getReturnType().getTypeName());
                 if (Types.isPrimitive(returnType))

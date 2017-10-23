@@ -74,18 +74,11 @@ public final class MessageGenerator extends AbstractProcessor
                                             "All methods on @Message must be no-arg non-void-returning methods",
                                             messageElement);
                         }
-                        for (VariableElement param : params)
-                        {
-                            final Name parameterName = param.getSimpleName();
-                            final TypeMirror parameterType = param.asType();
-                            parameters.add(new ParameterDescriptor(parameterName.toString(),
-                                    null, parameterType.toString()));
-                        }
 
                         final TypeMirror returnType = methodElement.getReturnType();
                         methods.add(new MethodDescriptor(i++, enclosedElement.getSimpleName().toString(),
                                 parameters.toArray(new ParameterDescriptor[parameters.size()]),
-                                new ParameterDescriptor("returnValue",
+                                new ParameterDescriptor(methodElement.getSimpleName().toString(),
                                         null, returnType.toString())));
                     }
                 }

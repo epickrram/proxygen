@@ -8,14 +8,14 @@ final class Fixtures
     static final MethodDescriptor[] METHODS = new MethodDescriptor[]
             {
                     new MethodDescriptor(0, "orderId", new ParameterDescriptor[0],
-                            new ParameterDescriptor(null, long.class, "long")),
+                            new ParameterDescriptor("orderId", long.class, "long")),
                     new MethodDescriptor(0, "getQuantity", new ParameterDescriptor[0],
-                            new ParameterDescriptor(null, double.class, "double")),
+                            new ParameterDescriptor("getQuantity", double.class, "double")),
                     new MethodDescriptor(0, "price", new ParameterDescriptor[0],
-                            new ParameterDescriptor(null, double.class, "double")),
+                            new ParameterDescriptor("price", double.class, "double")),
                     new MethodDescriptor(0, "getDescriptor", new ParameterDescriptor[0],
-                            new ParameterDescriptor(null, CharSequence.class, "java.lang.CharSequence")),
+                            new ParameterDescriptor("getDescriptor", CharSequence.class, "java.lang.CharSequence")),
                     new MethodDescriptor(0, "getDescriptor2", new ParameterDescriptor[0],
-                            new ParameterDescriptor(null, CharSequence.class, "java.lang.CharSequence")),
+                            new ParameterDescriptor("getDescriptor2", CharSequence.class, "java.lang.CharSequence")),
             };
 }
