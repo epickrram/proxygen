@@ -19,6 +19,7 @@ public class PublisherGeneratorTest {
                     "import com.aitusoftware.transport.buffer.WritableRecord;\n" +
                     "import com.aitusoftware.transport.buffer.PageCache;\n" +
                     "import com.aitusoftware.transport.messaging.proxy.Encoder;\n" +
+                    "import com.aitusoftware.transport.messaging.proxy.CoderCommon;\n" +
                     "import com.aitusoftware.transport.messaging.Sized;\n" +
                     "\n" +
                     "\n" +
@@ -31,7 +32,7 @@ public class PublisherGeneratorTest {
                     "\tpublic void say(\n" +
                     "\t\tfinal java.lang.CharSequence word, final int count) {\n" +
                     "\t\t\n" +
-                    "\t\tfinal int recordLength = (word.length() * 4) + 4  +  4;\n" +
+                    "\t\tfinal int recordLength = CoderCommon.getSerialisedCharSequenceByteLength(word)  +  4;\n" +
                     "\t\tfinal WritableRecord wr = acquireRecord(recordLength, (byte) 0);\n" +
                     "\t\tEncoder.encodeInt(wr.buffer(), count);\n" +
                     "\t\tEncoder.encodeCharSequence(wr.buffer(), word);\n" +
@@ -41,7 +42,7 @@ public class PublisherGeneratorTest {
                     "\tpublic void shout(\n" +
                     "\t\tfinal java.lang.CharSequence word, final int count) {\n" +
                     "\t\t\n" +
-                    "\t\tfinal int recordLength = (word.length() * 4) + 4  +  4;\n" +
+                    "\t\tfinal int recordLength = CoderCommon.getSerialisedCharSequenceByteLength(word)  +  4;\n" +
                     "\t\tfinal WritableRecord wr = acquireRecord(recordLength, (byte) 1);\n" +
                     "\t\tEncoder.encodeInt(wr.buffer(), count);\n" +
                     "\t\tEncoder.encodeCharSequence(wr.buffer(), word);\n" +
@@ -51,7 +52,7 @@ public class PublisherGeneratorTest {
                     "\tpublic void composite(\n" +
                     "\t\tfinal java.lang.CharSequence word, final com.example.OrderDetails orderDetails, final com.example.OrderDetails moreOrderDetails) {\n" +
                     "\t\t\n" +
-                    "\t\tfinal int recordLength = (word.length() * 4) + 4  + ((Sized) orderDetails).length() + ((Sized) moreOrderDetails).length() +  0;\n" +
+                    "\t\tfinal int recordLength = CoderCommon.getSerialisedCharSequenceByteLength(word)  + CoderCommon.getSerialisedMessageByteLength(orderDetails) + CoderCommon.getSerialisedMessageByteLength(moreOrderDetails) +  0;\n" +
                     "\t\tfinal WritableRecord wr = acquireRecord(recordLength, (byte) 2);\n" +
                     "\t\tEncoder.encodeCharSequence(wr.buffer(), word);\n" +
                     "\t\tcom.example.OrderDetailsSerialiser.serialise(orderDetails, wr.buffer());\n" +

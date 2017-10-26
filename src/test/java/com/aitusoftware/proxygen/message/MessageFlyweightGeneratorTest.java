@@ -15,6 +15,7 @@ public class MessageFlyweightGeneratorTest
                     "\n" +
                     "import foo.example.Requirement;\n" +
                     "import com.aitusoftware.transport.messaging.proxy.Decoder;\n" +
+                    "import com.aitusoftware.transport.messaging.proxy.CoderCommon;\n" +
                     "import com.aitusoftware.transport.messaging.Sized;\n" +
                     "import java.nio.ByteBuffer;\n" +
                     "\n" +
@@ -41,7 +42,7 @@ public class MessageFlyweightGeneratorTest
                     "\t}\n" +
                     "\n" +
                     "\tpublic java.lang.CharSequence getDescriptor2() {\n" +
-                    "\t\treturn Decoder.decodeCharSequenceAt(buffer, offset + 24 + (getDescriptor().length() * 2) + 4, descriptor2);\n" +
+                    "\t\treturn Decoder.decodeCharSequenceAt(buffer, offset + 24 + _calculateLengthOfDescriptor(), descriptor2);\n" +
                     "\t}\n" +
                     "\n" +
                     "\tpublic OrderDetails heapCopy() {\n" +
@@ -60,20 +61,30 @@ public class MessageFlyweightGeneratorTest
                     "\t}\n" +
                     "\n" +
                     "\tpublic int length() {\n" +
-                    "\t\t return 8 + 8 + 8 + (getDescriptor().length() * 2) + 4 + (getDescriptor2().length() * 2) + 4 + 0;\n" +
+                    "\t\t return 8 + 8 + 8 +  _calculateLengthOfDescriptor() +  _calculateLengthOfDescriptor2() + 0;\n" +
                     "\t}\n" +
                     "\n" +
                     "\tprivate final StringBuilder descriptor = new StringBuilder();\n" +
                     "\tprivate final StringBuilder descriptor2 = new StringBuilder();\n" +
+                    "\tprivate int _len_descriptor = -1;\n" +
+                    "\n" +
+                    "\tprivate int _calculateLengthOfDescriptor() {\n" +
+                    "\t\tif (_len_descriptor == -1) {\n" +
+                    "\t\t\t_len_descriptor = CoderCommon.getSerialisedCharSequenceLengthAtOffset(buffer, offset + 24);\n" +
+                    "\n" +
+                    "\t\t}\n" +
+                    "\t\treturn _len_descriptor;\n" +
+                    "\t}\n" +
+                    "\tprivate int _len_descriptor2 = -1;\n" +
+                    "\n" +
+                    "\tprivate int _calculateLengthOfDescriptor2() {\n" +
+                    "\t\tif (_len_descriptor2 == -1) {\n" +
+                    "\t\t\t_len_descriptor2 = CoderCommon.getSerialisedCharSequenceLengthAtOffset(buffer, offset + 24 + _calculateLengthOfDescriptor());\n" +
+                    "\n" +
+                    "\t\t}\n" +
+                    "\t\treturn _len_descriptor2;\n" +
+                    "\t}\n" +
                     "}";
-        /*
-    public interface OrderDetails extends Copyable<OrderDetails>
-{
-    long orderId();
-    double getQuantity();
-    double price();
-}
-     */
 
     @Test
     public void shouldGenerateFlyweight() throws Exception

@@ -19,6 +19,7 @@ public final class MessageFlyweightGenerator
 {
     private static final List<String> REQUIRED_IMPORTS = Arrays.asList(
             "com.aitusoftware.transport.messaging.proxy.Decoder",
+            "com.aitusoftware.transport.messaging.proxy.CoderCommon",
             "com.aitusoftware.transport.messaging.Sized",
             "java.nio.ByteBuffer"
     );
@@ -63,6 +64,7 @@ public final class MessageFlyweightGenerator
             int paramOffset = 0;
 
             final StringBuilder charSequenceLengths = new StringBuilder();
+            final StringBuilder lengthCachingMethods = new StringBuilder();
             final MethodDescriptor[] copy = new MethodDescriptor[methods.length];
             System.arraycopy(methods, 0, copy, 0, copy.length);
             Arrays.sort(copy, MethodDescriptorByReturnTypeSorter.INSTANCE);
@@ -95,10 +97,23 @@ public final class MessageFlyweightGenerator
 
                     fieldBuilder.append("\tprivate final StringBuilder ").append(translator.fieldName).
                             append(" = new StringBuilder();\n");
-                    lengthBuilder.append("(").append(method.getName()).append("().length() * 2) + 4").
-                            append(" + ");
 
-                    charSequenceLengths.append(" + (").append(method.getName()).append("().length() * 2) + 4");
+                    lengthCachingMethods.append("\tprivate int _len_").append(translator.fieldName).append(" = -1;\n\n");
+                    lengthCachingMethods.append("\tprivate int _calculateLengthOf").
+                            append(Types.toMethodSuffix(translator.fieldName)).append("() {\n").
+                            append("\t\tif (_len_").append(translator.fieldName).append(" == -1) {\n").
+                            append("\t\t\t_len_").append(translator.fieldName).append(" = ");
+
+                    lengthCachingMethods.append("CoderCommon.getSerialisedCharSequenceLengthAtOffset(buffer, offset + ").
+                            append(String.valueOf(paramOffset)).
+                            append(charSequenceLengths).
+                            append(");\n\n");
+
+                    lengthCachingMethods.append("\t\t}\n").append("\t\treturn _len_").append(translator.fieldName).append(";\n\t}\n");
+
+
+                    lengthBuilder.append(" _calculateLengthOf").append(Types.toMethodSuffix(translator.fieldName)).append("() + ");
+                    charSequenceLengths.append(" + _calculateLengthOf").append(Types.toMethodSuffix(translator.fieldName)).append("()");
                 }
             }
             lengthBuilder.append("0;\n").append("\t}\n\n");
@@ -119,6 +134,7 @@ public final class MessageFlyweightGenerator
             writer.append(resetBuilder);
             writer.append(lengthBuilder);
             writer.append(fieldBuilder);
+            writer.append(lengthCachingMethods);
 
             writer.append("}");
         }
