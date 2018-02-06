@@ -152,7 +152,7 @@ public final class AnnotationPublisherGenerator extends AbstractProcessor
             generatedAddressSpace = true;
             try
             {
-                final String packageName = getTopLevelPackage(addressSpace.keySet());
+                final String packageName = PackageNames.getTopLevelPackage(addressSpace.keySet());
                 final String fileName = packageName + "." + AddressSpaceGenerator.GENERATED_CLASS_NAME;
                 final JavaFileObject addressSpaceSourceFile = processingEnv.getFiler().
                         createSourceFile(fileName);
@@ -171,32 +171,5 @@ public final class AnnotationPublisherGenerator extends AbstractProcessor
         }
 
         return false;
-    }
-
-    private String getTopLevelPackage(final Set<String> classNames)
-    {
-        String classNameWithMostPackages = null;
-        int maxPackageCount = 0;
-        for (String className : classNames)
-        {
-            final int packages = className.split("\\.").length - 1;
-            if (packages > maxPackageCount || classNameWithMostPackages == null)
-            {
-                maxPackageCount = packages;
-                classNameWithMostPackages = className;
-            }
-        }
-
-        final String[] packages = classNameWithMostPackages.split("\\.");
-        final StringBuilder topLevelPackage = new StringBuilder(packages[0]);
-        int ptr = 1;
-        while (classNames.stream().
-                filter(cn -> cn.startsWith(topLevelPackage.toString())).
-                count() == classNames.size())
-        {
-            topLevelPackage.append(".").append(packages[ptr++]);
-        }
-
-        return topLevelPackage.toString();
     }
 }

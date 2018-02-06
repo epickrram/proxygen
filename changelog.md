@@ -3,8 +3,9 @@
 ### Added
 
 - Enhancements to serialisation performance
+- Fix root package name handling
 
-## [0.2.0] TBC
+## [0.2.0] 2017-10-23
 
 ### Added
 
